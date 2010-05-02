@@ -200,70 +200,70 @@ void NonPersistentNpcFactory::handleDatabaseJobComplete(void* ref,DatabaseResult
 			// Let's create the lair.
 		
 			// We save the lairs-type... that's kinda a template for the complete lair.
-			LairObject* npc	= new LairObject(asyncContainer->mTemplateId);
+			LairObject* lairEntity	= new LairObject(asyncContainer->mTemplateId);
 
 			// Set the new if of this temp object.
-			npc->setId(asyncContainer->mId);
+			lairEntity->setId(asyncContainer->mId);
 
 			// Register object with WorldManager.
-			gWorldManager->addObject(npc, true);
+			gWorldManager->addObject(lairEntity, true);
 
 			// May need the height also, in case of pre set (fixed) spawn position.
-			npc->mPosition.x = lair.mSpawnPosX;
-			npc->mPosition.z = lair.mSpawnPosZ;
+			lairEntity->mPosition.x = lair.mSpawnPosX;
+			lairEntity->mPosition.z = lair.mSpawnPosZ;
 
-			if (npc->getParentId() == 0)
+			if (lairEntity->getParentId() == 0)
 			{
 				// Heightmap only works outside.
-				npc->mPosition.y = npc->getHeightAt2DPosition(lair.mSpawnPosX, lair.mSpawnPosZ, true);
+				lairEntity->mPosition.y = lairEntity->getHeightAt2DPosition(lair.mSpawnPosX, lair.mSpawnPosZ, true);
 			}
 			else
 			{
 				// We do not have support for handling creatures inside.
 				assert(false && "NonPersistentNpcFactory::handleDatabaseJobComplete NonPersistentNpcQuery_LairTemplate No support for handling creatures inside");
-				npc->mPosition.y = 0;
+				lairEntity->mPosition.y = 0;
 			}
 			
-			npc->mDirection.y = lair.mSpawnDirY;
-			npc->mDirection.w = lair.mSpawnDirW;
+			lairEntity->mDirection.y = lair.mSpawnDirY;
+			lairEntity->mDirection.w = lair.mSpawnDirW;
 
 			// Let's get the spawn area.
 			const Anh_Math::Rectangle spawnArea = gWorldManager->getSpawnArea(lair.mCreatureSpwanRegion);
 
 			// lair.mCreatureSpwanRegion
-			npc->setSpawnArea(spawnArea); 
+			lairEntity->setSpawnArea(spawnArea); 
 
 			result->ResetRowIndex();
-			result->GetNextRow(lairSpawnNpcBinding,(void*)npc );
+			result->GetNextRow(lairSpawnNpcBinding,(void*)lairEntity );
 			
 			mDatabase->DestroyDataBinding(lairSpawnBinding);
 			mDatabase->DestroyDataBinding(lairSpawnNpcBinding);
 
 			Inventory*	npcInventory = new Inventory();
-			npcInventory->setParent(npc);
+			npcInventory->setParent(lairEntity);
 
-			npc->mHam.mHealth.setCurrentHitPoints(500);
-			npc->mHam.mAction.setCurrentHitPoints(500);
-			npc->mHam.mMind.setCurrentHitPoints(500);
-			npc->mHam.calcAllModifiedHitPoints();
+			lairEntity->mHam.mHealth.setCurrentHitPoints(500);
+			lairEntity->mHam.mAction.setCurrentHitPoints(500);
+			lairEntity->mHam.mMind.setCurrentHitPoints(500);
+			lairEntity->mHam.calcAllModifiedHitPoints();
 
 			// inventory
-			npcInventory->setId(npc->mId + 1);
-			npcInventory->setParentId(npc->mId);
+			npcInventory->setId(lairEntity->mId + 1);
+			npcInventory->setParentId(lairEntity->mId);
 			npcInventory->setModelString("object/tangible/inventory/shared_creature_inventory.iff");
 			
 			npcInventory->setName("inventory");
 			npcInventory->setNameFile("item_n");
 			npcInventory->setTangibleGroup(TanGroup_Inventory);
 			npcInventory->setTangibleType(TanType_CreatureInventory);
-			npc->mEquipManager.addEquippedObject(CreatureEquipSlot_Inventory,npcInventory);
+			lairEntity->mEquipManager.addEquippedObject(CreatureEquipSlot_Inventory,npcInventory);
 
-			npc->setType(ObjType_Creature);
+			lairEntity->setType(ObjType_Creature);
 
 			// This will ensure the use of the single H(am) bar.
-			npc->setCreoGroup(CreoGroup_AttackableObject);	
-			npc->mTypeOptions = 0x0;
-			npc->togglePvPStateOn((CreaturePvPStatus)(CreaturePvPStatus_Attackable));
+			lairEntity->setCreoGroup(CreoGroup_AttackableObject);	
+			lairEntity->mTypeOptions = 0x0;
+			lairEntity->togglePvPStateOn((CreaturePvPStatus)(CreaturePvPStatus_Attackable));
 
 			// gLogger->logMsgF("NonPersistentNpcFactory::handleDatabaseJobComplete() Attempting to get the creature templates for group %u used by this lair.", MSG_NORMAL, lair.mCreatureGroup);
 

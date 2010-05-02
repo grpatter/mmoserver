@@ -163,7 +163,7 @@ uint64 NpcManager::handleNpc(NPCObject* npc, uint64 timeOverdue)
 		}
 		else
 		{
-			gLogger->logMsgF("NpcManager::handleNpc() Invalid AI state.\n", MSG_NORMAL);
+			gLogger->logMsgF("NpcManager::handleNpc() Invalid AI state.", MSG_NORMAL);
 			assert(false && "NpcManager::handleNpc invalid AI state");
 		}
 	}
@@ -239,7 +239,7 @@ void NpcManager::handleDatabaseJobComplete(void* ref, DatabaseResult* result)
 
 				for (uint64 lairs = 0; lairs < lair.mNumberOfLairs; lairs++)
 				{
-					// We need two id's in sequence, since nps'c have an inventory.
+					// We need two id's in sequence, since nps'c have an inventory. -- were loading lairs ???
 					uint64 npcNewId = gWorldManager->getRandomNpNpcIdSequence();
 
 					if (npcNewId != 0)
