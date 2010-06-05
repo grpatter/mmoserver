@@ -182,6 +182,7 @@
     <ClCompile Include="InventoryFactory.cpp" />
     <ClCompile Include="Item.cpp" />
     <ClCompile Include="ItemFactory.cpp" />
+    <ClCompile Include="JediSkillManager.cpp" />
     <ClCompile Include="LairObject.cpp" />
     <ClCompile Include="ManufacturingSchematic.cpp" />
     <ClCompile Include="MedicHandlerHelpers.cpp" />
@@ -450,6 +451,7 @@
     <ClInclude Include="ItemDeleteEvent.h" />
     <ClInclude Include="ItemFactory.h" />
     <ClInclude Include="Item_Enums.h" />
+    <ClInclude Include="JediSkillManager.h" />
     <ClInclude Include="LairObject.h" />
     <ClInclude Include="LogOutEvent.h" />
     <ClInclude Include="ManufacturingSchematic.h" />

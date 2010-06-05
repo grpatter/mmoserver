@@ -35,6 +35,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #include "Food.h"
 #include "ForageManager.h"
 #include "GroupManager.h"
+#include "JediSkillManager.h"
 #include "MedicManager.h"
 #include "NonPersistentItemFactory.h"
 #include "NonPersistentNpcFactory.h"
@@ -174,6 +175,7 @@ mDatabase(0)
 	TradeManager::Init(mDatabase,mMessageDispatch);
 	BuffManager::Init(mDatabase);
 	MedicManager::Init(mMessageDispatch);
+	JediSkillManager::Init(mMessageDispatch);
 	AdminManager::Init(mMessageDispatch);
 	EntertainerManager::Init(mDatabase,mMessageDispatch);
 	GroupManager::Init(mDatabase,mMessageDispatch);
@@ -232,6 +234,7 @@ ZoneServer::~ZoneServer(void)
 
 	delete gSkillManager->getSingletonPtr();
 	delete gMedicManager->getSingletonPtr();
+	delete gJediSkillManager->getSingletonPtr();
 	delete gBuffManager->getSingletonPtr();
 
 	// NOW, I can feel that it should be safe to delete the data holding messages.
