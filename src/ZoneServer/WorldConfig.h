@@ -149,12 +149,6 @@ class WorldConfig : public DatabaseCallback
 		// Server Time Speed, add to the timecounter, adjusts how fast time goes by
 		uint32				mServerTimeSpeed;
 
-		// Server Weather Update Frequency, how often weather updates happen
-		uint32				mWeatherUpdateInterval;
-
-		// Maximum Weather type, max id for the randomizer to set a weathertype, differs for each planet
-		uint8				mMaxWeatherId;
-
 		// incapacitation
 		uint8				mPlayerMaxIncaps;
 		uint32				mPlayerBaseIncapTime;

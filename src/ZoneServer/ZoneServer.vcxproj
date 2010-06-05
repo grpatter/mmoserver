@@ -332,6 +332,7 @@
     <ClCompile Include="WaypointObject.cpp" />
     <ClCompile Include="Weapon.cpp" />
     <ClCompile Include="Wearable.cpp" />
+    <ClCompile Include="WeatherManager.cpp" />
     <ClCompile Include="WeightsBatch.cpp" />
     <ClCompile Include="WorldConfig.cpp" />
     <ClCompile Include="WorldManager.cpp" />
@@ -568,6 +569,7 @@
     <ClInclude Include="Weapon.h" />
     <ClInclude Include="Wearable.h" />
     <ClInclude Include="Weather.h" />
+    <ClInclude Include="WeatherManager.h" />
     <ClInclude Include="WeightsBatch.h" />
     <ClInclude Include="WorldConfig.h" />
     <ClInclude Include="WorldManager.h" />

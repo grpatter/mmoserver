@@ -92,8 +92,6 @@ void WorldConfig::handleDatabaseJobComplete(void* ref,DatabaseResult* result)
 	else if(mContainerDepth< 3)
 		mContainerDepth= 3;
 
-
-	
 	// Message of the day
 
 	// Player viewing range
@@ -114,9 +112,7 @@ void WorldConfig::handleDatabaseJobComplete(void* ref,DatabaseResult* result)
 	else if(mPlayerChatRange < 32)
 		mPlayerChatRange = 32;
 
-
 	// Server Time Update Frequency
-	
 	mServerTimeInterval = gWorldConfig->getConfiguration("Server_Time_Interval",30);
 	
 	if(mServerTimeInterval < 10)
