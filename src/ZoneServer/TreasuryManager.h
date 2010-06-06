@@ -59,7 +59,8 @@ enum TREMQueryType
 {
 	TREMQuery_NULL					=	0,
 	TREMQuery_BankTipgetId			=	1,
-	TREMQuery_BankTipTransaction	=	2
+	TREMQuery_BankTipTransaction	=	2,
+	TREMQuery_BankSafetyDeposit		=   3
 
 };
 
@@ -109,6 +110,7 @@ class TreasuryManager : public DatabaseCallback, UICallback
 
 		void						    saveAndUpdateInventoryCredits(PlayerObject* playerObject);
 		void						    saveAndUpdateBankCredits(PlayerObject* playerObject);
+		void						    saveAndUpdateBankItems(PlayerObject* playerObject);
 
 		//handles bank tip to offline player
 		void							handleBankTipSurchargeConfirmed(TreasuryManagerAsyncContainer* asyncContainer);

@@ -26,8 +26,9 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
 #include "TreasuryManager.h"
+#include "ContainerObjectFactory.h"
+#include "ObjectContainer.h"
 #include "Bank.h"
-#include "BankTerminal.h"
 #include "Inventory.h"
 #include "PlayerObject.h"
 #include "UIManager.h"
@@ -252,6 +253,33 @@ void TreasuryManager::bankTransfer(int32 inventoryMoneyDelta, int32 bankMoneyDel
 
 void TreasuryManager::bankOpenSafetyDepositContainer(PlayerObject* playerObject)
 {
+	if(Bank* bank = dynamic_cast<Bank*>(playerObject->getEquipManager()->getEquippedObject(CreatureEquipSlot_Bank)))
+	{
+		if(Inventory* inventory = dynamic_cast<Inventory*>(playerObject->getEquipManager()->getEquippedObject(CreatureEquipSlot_Inventory)))
+		{
+			//create container
+			//grab items async
+			//send openContainer from message Lib
+			//close container has to destroy container object
+			//now get the player
+
+
+			int8 sql[256];
+			sprintf(sql,"SELECT id from items WHERE parent_id=%"PRIu64"",bank->getId());
+
+			TreasuryManagerAsyncContainer* asyncContainer;
+			asyncContainer = new TreasuryManagerAsyncContainer(TREMQuery_BankSafetyDeposit, playerObject->getClient());
+			//asyncContainer->
+			//asyncContainer->amount = amount;
+			//asyncContainer->surcharge = surcharge;
+			//asyncContainer->targetName = targetName;
+			asyncContainer->player = playerObject;
+			
+			mDatabase->ExecuteSqlAsync(this,asyncContainer,sql);
+
+			gLogger->log(LogManager::DEBUG, "we've got bank and gotten the inventory");
+		}
+	}
 }
 
 //======================================================================================================================
@@ -324,6 +352,10 @@ void TreasuryManager::saveAndUpdateBankCredits(PlayerObject* playerObject)
 {
 	mDatabase->DestroyResult(mDatabase->ExecuteSynchSql("UPDATE banks SET credits=%u WHERE id=%"PRIu64"",dynamic_cast<Bank*>(playerObject->getEquipManager()->getEquippedObject(CreatureEquipSlot_Bank))->getCredits(), playerObject->getId() + 4));
 	gMessageLib->sendBankCreditsUpdate(playerObject);
+}
+void TreasuryManager::saveAndUpdateBankItems(PlayerObject* playerObject)
+{
+	
 }
 
 //======================================================================================================================
@@ -550,6 +582,24 @@ void TreasuryManager::handleDatabaseJobComplete(void* ref,DatabaseResult* result
 			else
 			{
 				gMessageLib->sendSystemMessage(asynContainer->player, L"","error_message","bank_error");
+			}
+		}
+		case TREMQuery_BankSafetyDeposit:
+		{
+			uint32 error;
+			DataBinding* binding = mDatabase->CreateDataBinding(1);
+			binding->addField(DFT_uint32,0,4);
+			result->GetNextRow(binding,&error);
+
+			if (error = 0)
+			{
+				Bank* bank = dynamic_cast<Bank*>(asynContainer->player->getEquipManager()->getEquippedObject(CreatureEquipSlot_Bank));
+				gLogger->log(LogManager::DEBUG, "we've got bank callback");
+				//show items in bank now
+				BStringVector vector;// = bank->getMenuList();
+				gUIManager->createNewListBox(this, "safe deposit", "caption","prompt",vector ,asynContainer->player,SUI_Window_ListBox,0 , bank->getId(), 5.0f, 0);
+
+
 			}
 		}
 		break;
