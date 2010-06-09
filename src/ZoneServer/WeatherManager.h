@@ -15,7 +15,9 @@ private:
 	uint32 mWeatherSystemCount;
 	uint32 mWeatherUpdateInterval;
 	uint32 mRegionsPerRow;
-	uint32 mWidth;
+	float mWidth;
+	uint32 mLevelCounts[5];
+
 
 	uint64 mLastWeatherReseed;
 	uint64 mLastWeatherUpdate;

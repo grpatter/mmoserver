@@ -118,6 +118,7 @@ PlayerObject::PlayerObject()
 , mNewPlayerMessage(false)
 , mTrading(false)
 , mHasCamp(false)
+, mWeatherRegionId(-1)
 {
 	mIsForaging			= false;
 	mType				= ObjType_Player;

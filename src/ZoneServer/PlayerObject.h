@@ -403,6 +403,9 @@ class PlayerObject : public CreatureObject
 		void				setProne();
 		void				setCrouched();
 
+		int					getWeatherRegion() { return mWeatherRegionId; }
+		void				setWeatherRegion(int i) { mWeatherRegionId = i; }
+
 	private:
 
 		void				_verifyBadges();
@@ -508,6 +511,8 @@ class PlayerObject : public CreatureObject
 		bool				mIsForaging;
 
 		int					mPreviousHarvestingSelection;
+
+		int					mWeatherRegionId;
 };
 
 
