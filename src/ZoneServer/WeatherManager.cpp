@@ -151,6 +151,9 @@ WeatherManager::WeatherManager(uint64 currentTime)
 		pRegion->mSubZoneId	= (uint32)pRegion->mQTRegion->getId();
 		pRegion->mQueryRect	= Anh_Math::Rectangle(x,z,blockWidth,blockWidth);
 		pRegion->mId		= i;
+		pRegion->cloudVector.x = (float)gRandom->getRand();
+		pRegion->cloudVector.y = (float)gRandom->getRand();
+		pRegion->cloudVector.z = (float)gRandom->getRand();
 
 		mRegions.push_back(pRegion);
 	}

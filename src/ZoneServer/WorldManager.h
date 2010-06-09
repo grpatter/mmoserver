@@ -71,6 +71,7 @@ class Ham;
 class Buff;
 class MissionObject;
 class Stomach;
+class WeatherManager;
 
 //======================================================================================================================
 
@@ -478,7 +479,7 @@ class WorldManager : public ObjectFactoryCallback, public DatabaseCallback, publ
 		Anh_Utils::Scheduler*		mNpcManagerScheduler;
 		Anh_Utils::Scheduler*		mObjControllerScheduler;
 		Anh_Utils::Scheduler*		mPlayerScheduler;
-		ZoneTree*								mSpatialIndex;
+		ZoneTree*					mSpatialIndex;
 		Anh_Utils::Scheduler*		mSubsystemScheduler;
 		ZoneServer*					mZoneServer;
 		WMState						mState;
@@ -488,7 +489,8 @@ class WorldManager : public ObjectFactoryCallback, public DatabaseCallback, publ
 		uint64						mTick;
 		uint32						mTotalObjectCount;
 		uint32						mZoneId;
-		
+		WeatherManager*				mWeatherManager;
+
 		bool						mDebug;
 };
 

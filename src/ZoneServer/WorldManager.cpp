@@ -66,6 +66,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #include "ForageManager.h"
 #include "FireworkManager.h"
 #include "TicketCollector.h"
+#include "WeatherManager.h"
 #include "ConfigManager/ConfigManager.h"
 #include "DatabaseManager/Database.h"
 #include "DatabaseManager/DataBinding.h"
@@ -140,6 +141,10 @@ WorldManager::WorldManager(uint32 zoneId,ZoneServer* zoneServer,Database* databa
 	// load up subsystems
 
 	SkillManager::Init(database);
+
+	if(zoneId != 41)
+		mWeatherManager = new WeatherManager(this->GetCurrentGlobalTick());
+
 	SchematicManager::Init(database);
 	if(zoneId != 41)
 		ResourceManager::Init(database,mZoneId);
@@ -739,6 +744,7 @@ bool WorldManager::_handleVariousUpdates(uint64 callTime, void* ref)
 {
 	gForageManager->forageUpdate();
 	gFireworkManager->Process();
+	mWeatherManager->update(this->GetCurrentGlobalTick());
 	return true;
 }
 
