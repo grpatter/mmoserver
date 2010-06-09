@@ -65,6 +65,8 @@ class BuildingObject;
 class UICloneSelectListBox;
 class PlayerStructure;
 class FactoryObject;
+class Inventory;
+class Bank;
 
 //======================================================================================================================
 
@@ -96,7 +98,6 @@ class UIManager : public MessageDispatchCallback
 		void				createNewResourceSelectListBox(UICallback* callback,const int8* eventStr,const int8* caption,const int8* prompt,const BStringVector dataItems,ResourceIdList resourceIdList,PlayerObject* playerObject,uint8 windowType,uint8 lbType = SUI_LB_OK);
 		void				createNewCloneSelectListBox(UICallback* callback,const int8* eventStr,const int8* caption,const int8* prompt,const BStringVector dataItems,std::vector<BuildingObject*> buildingList,PlayerObject* playerObject,uint8 lbType = SUI_LB_OK);
 		void				createNewDiagnoseListBox(UICallback* callback,PlayerObject* Medic,PlayerObject* Patient);
-		
 		
 		
 		// custom message boxes

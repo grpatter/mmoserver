@@ -257,25 +257,25 @@ void TreasuryManager::bankOpenSafetyDepositContainer(PlayerObject* playerObject)
 	{
 		if(Inventory* inventory = dynamic_cast<Inventory*>(playerObject->getEquipManager()->getEquippedObject(CreatureEquipSlot_Inventory)))
 		{
+			TreasuryManagerAsyncContainer *asyncContainer = new TreasuryManagerAsyncContainer(TREMQuery_BankSafetyDeposit, playerObject->getClient());
+			//Contianer* container = dynamic_cast<Container*>(asyncContainer);
+			//Container* container  = dynamic_cast<Container*>(inventory->getId());
 			//create container
-			//grab items async
-			//send openContainer from message Lib
-			//close container has to destroy container object
-			//now get the player
+			// check if the player is really binded to this bank
+			if(static_cast<uint32>(bank->getPlanet()) != gWorldManager->getZoneId())
+			{
+				gMessageLib->sendSystemMessage(playerObject, L"You are not a member of this bank.");
+				return;
+			}
 
-
-			int8 sql[256];
-			sprintf(sql,"SELECT id from items WHERE parent_id=%"PRIu64"",bank->getId());
-
-			TreasuryManagerAsyncContainer* asyncContainer;
-			asyncContainer = new TreasuryManagerAsyncContainer(TREMQuery_BankSafetyDeposit, playerObject->getClient());
-			//asyncContainer->
-			//asyncContainer->amount = amount;
-			//asyncContainer->surcharge = surcharge;
-			//asyncContainer->targetName = targetName;
+			//int8 sql[256];
+			//sprintf(sql,"SELECT id from items WHERE parent_id=%"PRIu64"",bank->getId());
+			asyncContainer->mQueryType = TREMQuery_BankSafetyDeposit;
 			asyncContainer->player = playerObject;
-			
-			mDatabase->ExecuteSqlAsync(this,asyncContainer,sql);
+			mDatabase->ExecuteSqlAsync(this, asyncContainer,"(SELECT \'containers\',containers.id FROM containers INNER JOIN container_types ON (containers.container_type = container_types.id)"
+						" WHERE (container_types.name NOT LIKE 'unknown') AND (containers.parent_id = %"PRIu64"))"
+						" UNION (SELECT \'items\',items.id FROM items WHERE (parent_id=%"PRIu64"))"
+						" UNION (SELECT \'resource_containers\',resource_containers.id FROM resource_containers WHERE (parent_id=%"PRIu64"))");
 
 			gLogger->log(LogManager::DEBUG, "we've got bank and gotten the inventory");
 		}
@@ -593,14 +593,13 @@ void TreasuryManager::handleDatabaseJobComplete(void* ref,DatabaseResult* result
 
 			if (error = 0)
 			{
-				Bank* bank = dynamic_cast<Bank*>(asynContainer->player->getEquipManager()->getEquippedObject(CreatureEquipSlot_Bank));
-				gLogger->log(LogManager::DEBUG, "we've got bank callback");
+				//gContainerFactory->requestObject(this, asynContainer->targetId(), 0, 0, asynContainer->mClient);
 				//show items in bank now
-				BStringVector vector;// = bank->getMenuList();
-				gUIManager->createNewListBox(this, "safe deposit", "caption","prompt",vector ,asynContainer->player,SUI_Window_ListBox,0 , bank->getId(), 5.0f, 0);
-
+				
 
 			}
+			//nothing in the bank, but still open it
+			gMessageLib->sendOpenedContainer(asynContainer->targetId, asynContainer->player);
 		}
 		break;
 		case TREMQuery_NULL:
