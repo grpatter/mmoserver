@@ -549,7 +549,7 @@ bool ObjectController::checkTargetContainer(uint64 targetContainerId, Object* ob
 {
 	PlayerObject*	playerObject	=	dynamic_cast<PlayerObject*>(mObject);
 	Inventory*		inventory		=	dynamic_cast<Inventory*>(playerObject->getEquipManager()->getEquippedObject(CreatureEquipSlot_Inventory));
-	
+	Bank*			bank			=	dynamic_cast<Bank*>(playerObject->getEquipManager()->getEquippedObject(CreatureEquipSlot_Bank));
 	TangibleObject* tangibleItem = dynamic_cast<TangibleObject*>(object);
 	
 	//if its a backpack etc we want to know how many items are in it!
@@ -574,12 +574,15 @@ bool ObjectController::checkTargetContainer(uint64 targetContainerId, Object* ob
 	if(!targetContainer)
 	{
 		//inventory is NOT part of the main ObjectMap - everything else should be in there
-		if(inventory && (inventory->getId() != targetContainerId))
+		//check the bank too (safety Deposit box)
+		if(inventory && (inventory->getId() != targetContainerId) && (bank->getId() != targetContainerId))
 		{
 			return false;
 		}
 		if(inventory)
 			targetContainer = dynamic_cast<TangibleObject*>(inventory);
+		else if (bank)
+			targetContainer = dynamic_cast<TangibleObject*>(bank);
 		else
 		{
 			gLogger->log(LogManager::DEBUG,"ObjController::_handleTransferItemMisc: TargetContainer is NULL and not an inventory :(");
@@ -694,7 +697,7 @@ bool ObjectController::checkTargetContainer(uint64 targetContainerId, Object* ob
 	//**********************
 	//check capacity - return false if full
 	//we wont get here if its an inventory
-	if(tangibleContainer && (!tangibleContainer->checkCapacity(objectSize,playerObject))) //automatically sends errormsg to player
+	if(tangibleContainer && (!tangibleContainer->checkCapacity(objectSize,playerObject)) && bank->getId() != targetContainerId) //automatically sends errormsg to player
 	{
 		return false;
 	}

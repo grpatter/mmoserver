@@ -27,6 +27,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 
 #include "TreasuryManager.h"
 #include "ContainerObjectFactory.h"
+#include "Container.h"
 #include "ObjectContainer.h"
 #include "Bank.h"
 #include "Inventory.h"
@@ -258,9 +259,6 @@ void TreasuryManager::bankOpenSafetyDepositContainer(PlayerObject* playerObject)
 		if(Inventory* inventory = dynamic_cast<Inventory*>(playerObject->getEquipManager()->getEquippedObject(CreatureEquipSlot_Inventory)))
 		{
 			TreasuryManagerAsyncContainer *asyncContainer = new TreasuryManagerAsyncContainer(TREMQuery_BankSafetyDeposit, playerObject->getClient());
-			//Contianer* container = dynamic_cast<Container*>(asyncContainer);
-			//Container* container  = dynamic_cast<Container*>(inventory->getId());
-			//create container
 			// check if the player is really binded to this bank
 			if(static_cast<uint32>(bank->getPlanet()) != gWorldManager->getZoneId())
 			{
@@ -272,12 +270,8 @@ void TreasuryManager::bankOpenSafetyDepositContainer(PlayerObject* playerObject)
 			//sprintf(sql,"SELECT id from items WHERE parent_id=%"PRIu64"",bank->getId());
 			asyncContainer->mQueryType = TREMQuery_BankSafetyDeposit;
 			asyncContainer->player = playerObject;
-			mDatabase->ExecuteSqlAsync(this, asyncContainer,"(SELECT \'containers\',containers.id FROM containers INNER JOIN container_types ON (containers.container_type = container_types.id)"
-						" WHERE (container_types.name NOT LIKE 'unknown') AND (containers.parent_id = %"PRIu64"))"
-						" UNION (SELECT \'items\',items.id FROM items WHERE (parent_id=%"PRIu64"))"
-						" UNION (SELECT \'resource_containers\',resource_containers.id FROM resource_containers WHERE (parent_id=%"PRIu64"))");
-
-			gLogger->log(LogManager::DEBUG, "we've got bank and gotten the inventory");
+			asyncContainer->targetId = bank->getId();
+			mDatabase->ExecuteSqlAsync(this, asyncContainer,"SELECT id from items WHERE parent_id=%"PRIu64"",bank->getId());
 		}
 	}
 }
@@ -578,10 +572,34 @@ void TreasuryManager::handleDatabaseJobComplete(void* ref,DatabaseResult* result
 				gMessageLib->sendBankCreditsUpdate(asynContainer->player);
 				gMessageLib->sendBankTipDustOff(asynContainer->player,asynContainer->targetId,asynContainer->amount,asynContainer->targetName);
 				//notify the chatserver for the EMails and the off zone accounts
+
+				int8 sql[1024];
+
+				//CAVE galaxy id is hardcoded!!!!!!1
+				int8 galaxyId = 2;
+
+				sprintf(sql, "CALL sp_GalaxyAccountDepositCredits(%u, %u, %"PRIu64",%u",galaxyId, Account_TipSurcharge, asynContainer->player, asynContainer->surcharge);
+				TreasuryManagerAsyncContainer* asyncContainer = new TreasuryManagerAsyncContainer(TREMQuery_BankTipUpdateGalaxyAccount,0);
+
+				mDatabase->ExecuteProcedureAsync(this,asyncContainer,sql);
 			}
 			else
 			{
 				gMessageLib->sendSystemMessage(asynContainer->player, L"","error_message","bank_error");
+			}
+		}
+		break;
+
+		case TREMQuery_BankTipUpdateGalaxyAccount:
+		{
+			uint32 error;
+			DataBinding* binding = mDatabase->CreateDataBinding(1);
+			binding->addField(DFT_uint32,0,4);
+			result->GetNextRow(binding,&error);
+
+			if (error > 0)
+			{
+				gLogger->log(LogManager::DEBUG,"TreasuryManager::Account_TipSurcharge: error %u", error);
 			}
 		}
 		case TREMQuery_BankSafetyDeposit:
@@ -590,14 +608,8 @@ void TreasuryManager::handleDatabaseJobComplete(void* ref,DatabaseResult* result
 			DataBinding* binding = mDatabase->CreateDataBinding(1);
 			binding->addField(DFT_uint32,0,4);
 			result->GetNextRow(binding,&error);
-
-			if (error = 0)
-			{
-				//gContainerFactory->requestObject(this, asynContainer->targetId(), 0, 0, asynContainer->mClient);
-				//show items in bank now
-				
-
-			}
+			
+			//Bank* bank = dynamic_cast<Bank*>(asynContainer->player->getEquipManager()->getEquippedObject(CreatureEquipSlot_Bank));
 			//nothing in the bank, but still open it
 			gMessageLib->sendOpenedContainer(asynContainer->targetId, asynContainer->player);
 		}
