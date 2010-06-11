@@ -73,5 +73,22 @@ bool Bank::updateCredits(int32 amount)
 }
 
 //=============================================================================
+//check for the containers capacity and return a fitting error message if necessary
+//
 
+bool Bank::checkCapacity(uint8 amount, PlayerObject* player, bool sendMsg)
+{
+	if(player&&(getCapacity() - getHeadCount() < amount))
+	{
+		if(sendMsg)
+			//update stf
+			gMessageLib->sendSystemMessage(player,L"Your bank is full");
+		return false;
+	}
 
+	return true;
+}
+void Bank::UpdateWorldPosition()
+{
+	gWorldManager->getDatabase()->ExecuteSqlAsync(0,0,"UPDATE containers SET parent_id ='%I64u', oX='%f', oY='%f', oZ='%f', oW='%f', x='%f', y='%f', z='%f' WHERE id='%I64u'",this->getParentId(), this->mDirection.x, this->mDirection.y, this->mDirection.z, this->mDirection.w, this->mPosition.x, this->mPosition.y, this->mPosition.z, this->getId());
+}

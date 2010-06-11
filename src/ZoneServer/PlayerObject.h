@@ -69,7 +69,14 @@ typedef std::list<uint32>						UIWindowList;
 typedef std::map<uint32,BString>				ContactMap;
 
 //=============================================================================
+enum PlayerOffSet{
+	INVENTORY_OFFSET	= 1,
+	//offset 2
+	//offset 3
+	BANK_OFFSET			= 4
 
+};
+//======================================================================================================================
 class PlayerObject : public CreatureObject
 {
 	friend class PlayerObjectFactory;

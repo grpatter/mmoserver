@@ -206,7 +206,10 @@ void ObjectController::_handleCloseContainer(uint64 targetId,Message* message,Ob
 	{
 		playerObject->getTutorial()->containerClose(targetId);
 	}
+	if (playerObject->getEquipManager()->getEquippedObject(CreatureEquipSlot_Bank))
+	{
 
+	}
 	// gMessageLib->sendOpenedContainer(targetId, playerObject);
 }
 
@@ -458,7 +461,8 @@ bool ObjectController::checkContainingContainer(uint64 containingContainer, uint
 	{
 		//it might be our inventory or the inventory of a creature were looting
 		//PlayerObject* player = dynamic_cast<PlayerObject*>(gWorldManager->getObjectById(playerId));
-		if(containingContainer == (playerId+1))
+		//+1 is inventory, +4 is bank...
+		if(containingContainer == (playerId+1) || containingContainer == (playerId+4))
 		{
 			//its our inventory ... - return true
 			return true;
@@ -527,6 +531,14 @@ bool ObjectController::checkContainingContainer(uint64 containingContainer, uint
 		else
 			return false;
 	}
+	//handle bank
+	if(Bank* bank = dynamic_cast<Bank*>(object))
+	{
+		if(static_cast<uint32>(bank->getPlanet()) != gWorldManager->getZoneId())
+		{
+			return false;
+		}
+	}
 
 	//todo handle factory hoppers
 
@@ -579,9 +591,9 @@ bool ObjectController::checkTargetContainer(uint64 targetContainerId, Object* ob
 		{
 			return false;
 		}
-		if(inventory)
+		if(inventory && (bank->getId() != targetContainerId))
 			targetContainer = dynamic_cast<TangibleObject*>(inventory);
-		else if (bank)
+		else if (bank&& bank->getId() == targetContainerId)
 			targetContainer = dynamic_cast<TangibleObject*>(bank);
 		else
 		{
@@ -624,7 +636,18 @@ bool ObjectController::checkTargetContainer(uint64 targetContainerId, Object* ob
 
 		access = true;
 	}
-	
+	//BANK
+	//===================================================================================
+	if ((bank && bank->getId() == targetContainer->getId()))
+	{
+			// check if the player is really binded to this bank
+			if(static_cast<uint32>(bank->getPlanet()) != gWorldManager->getZoneId())
+			{
+				gMessageLib->sendSystemMessage(playerObject, L"You are not a member of this bank.");
+			}
+			access = ((bank->getId()) == playerObject->getId());
+
+	}
 	//====================================================================================
 	//get the mainOwner of the container - thats a building or a player or an inventory
 	//
@@ -667,9 +690,9 @@ bool ObjectController::checkTargetContainer(uint64 targetContainerId, Object* ob
 	}
 
 	//**********************************
-	//the inventory is *NOT* part of the worldmanagers ObjectMap  
+	//the inventory is *NOT* part of the worldmanagers ObjectMap  bank isn't either
 	//this is our inventory - we are allowed to put stuff in there - but is there still enough place ?
-	if(inventory&& (inventory->getId() == ownerId))
+	if(inventory&& (inventory->getId() == ownerId) && !bank)
 	{
 		//make sure its our inventory!!!!!!
 		access = ((inventory->getId()-1) == playerObject->getId());
@@ -697,7 +720,8 @@ bool ObjectController::checkTargetContainer(uint64 targetContainerId, Object* ob
 	//**********************
 	//check capacity - return false if full
 	//we wont get here if its an inventory
-	if(tangibleContainer && (!tangibleContainer->checkCapacity(objectSize,playerObject)) && bank->getId() != targetContainerId) //automatically sends errormsg to player
+	if(tangibleContainer && (!tangibleContainer->checkCapacity(objectSize,playerObject)) 
+		&& (bank->getId() != targetContainerId)) //automatically sends errormsg to player
 	{
 		return false;
 	}
@@ -728,6 +752,7 @@ bool ObjectController::removeFromContainer(uint64 targetContainerId, uint64 targ
 	PlayerObject*	playerObject	=	dynamic_cast<PlayerObject*>(mObject);
 	Object*			itemObject		=	gWorldManager->getObjectById(targetId);
 	Inventory*		inventory		=	dynamic_cast<Inventory*>(playerObject->getEquipManager()->getEquippedObject(CreatureEquipSlot_Inventory));
+	Bank*			bank			=	dynamic_cast<Bank*>(playerObject->getEquipManager()->getEquippedObject(CreatureEquipSlot_Bank));
 	TangibleObject* targetContainer = dynamic_cast<TangibleObject*>(gWorldManager->getObjectById(targetContainerId));
 
 	TangibleObject* tangible = dynamic_cast<TangibleObject*>(itemObject);
@@ -870,7 +895,7 @@ bool ObjectController::removeFromContainer(uint64 targetContainerId, uint64 targ
 
 	//some other container ... hopper backpack chest etc
 	TangibleObject* containingContainer = dynamic_cast<TangibleObject*>(gWorldManager->getObjectById(tangible->getParentId()));
-	if(containingContainer&&containingContainer->removeObject(itemObject))
+	if(containingContainer&&containingContainer->removeObject(itemObject) || bank&&bank->removeObject(itemObject))
 
 	{
 		playerObject->removeKnownObject(tangible);
@@ -896,6 +921,7 @@ void ObjectController::_handleTransferItemMisc(uint64 targetId,Message* message,
 	PlayerObject*	playerObject	=	dynamic_cast<PlayerObject*>(mObject);
 	Object*			itemObject		=	gWorldManager->getObjectById(targetId);
 	Inventory*		inventory		=	dynamic_cast<Inventory*>(playerObject->getEquipManager()->getEquippedObject(CreatureEquipSlot_Inventory));
+	Bank*			bank			=	dynamic_cast<Bank*>(playerObject->getEquipManager()->getEquippedObject(CreatureEquipSlot_Bank));
 
 	string			dataStr;
 	uint64			targetContainerId;
@@ -1068,7 +1094,15 @@ void ObjectController::_handleTransferItemMisc(uint64 targetId,Message* message,
 		return;
 		
 	}
-	
+	if (bank && (bank->getId() == targetContainerId))	//valid bank
+	{
+		itemObject->destroyKnownObjects();
+		gMessageLib->sendCreateObject(itemObject,playerObject);
+
+		itemObject->setParentId(targetContainerId,linkType,playerObject,true);
+		bank->addObjectSecure(itemObject);
+		itemObject->updateWorldPosition();
+	}
 	
 	PlayerObject* player = dynamic_cast<PlayerObject*>(gWorldManager->getObjectById(targetContainerId));
 	if(player)

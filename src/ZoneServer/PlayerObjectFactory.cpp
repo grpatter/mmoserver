@@ -592,7 +592,7 @@ PlayerObject* PlayerObjectFactory::_createPlayer(DatabaseResult* result)
 	playerBank->setTangibleGroup(TanGroup_PlayerInternal);
 	playerBank->setTangibleType(TanType_Bank);
 	playerBank->setEquipSlotMask(CreatureEquipSlot_Bank);
-
+	playerBank->setCapacity(100);
 	playerObject->mEquipManager.addEquippedObject(CreatureEquipSlot_Bank,playerBank);
 
 	// weapon

@@ -26,7 +26,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
 #include "TreasuryManager.h"
-#include "ContainerObjectFactory.h"
+#include "ItemFactory.h"
 #include "Container.h"
 #include "ObjectContainer.h"
 #include "Bank.h"
@@ -258,20 +258,23 @@ void TreasuryManager::bankOpenSafetyDepositContainer(PlayerObject* playerObject)
 	{
 		if(Inventory* inventory = dynamic_cast<Inventory*>(playerObject->getEquipManager()->getEquippedObject(CreatureEquipSlot_Inventory)))
 		{
-			TreasuryManagerAsyncContainer *asyncContainer = new TreasuryManagerAsyncContainer(TREMQuery_BankSafetyDeposit, playerObject->getClient());
+			TreasuryManagerAsyncContainer* asContainer = new TreasuryManagerAsyncContainer(TREMQuery_BankDepositBox, playerObject->getClient());
 			// check if the player is really binded to this bank
 			if(static_cast<uint32>(bank->getPlanet()) != gWorldManager->getZoneId())
 			{
 				gMessageLib->sendSystemMessage(playerObject, L"You are not a member of this bank.");
 				return;
 			}
-
-			//int8 sql[256];
-			//sprintf(sql,"SELECT id from items WHERE parent_id=%"PRIu64"",bank->getId());
-			asyncContainer->mQueryType = TREMQuery_BankSafetyDeposit;
-			asyncContainer->player = playerObject;
-			asyncContainer->targetId = bank->getId();
-			mDatabase->ExecuteSqlAsync(this, asyncContainer,"SELECT id from items WHERE parent_id=%"PRIu64"",bank->getId());
+			uint64 bankId = bank->getId();
+			asContainer->player = playerObject;
+			asContainer->targetId = bankId;
+			asContainer->bank = bank;
+			mDatabase->ExecuteSqlAsync(this,asContainer,
+			"(SELECT \'containers\',containers.id FROM containers INNER JOIN container_types ON (containers.container_type = container_types.id)"
+			" WHERE (container_types.name NOT LIKE 'unknown') AND (containers.parent_id = %"PRIu64"))"
+			" UNION (SELECT \'items\',items.id FROM items WHERE (parent_id=%"PRIu64"))"
+			" UNION (SELECT \'resource_containers\',resource_containers.id FROM resource_containers WHERE (parent_id=%"PRIu64"))",
+			bankId,bankId,bankId);
 		}
 	}
 }
@@ -518,7 +521,7 @@ void TreasuryManager::handleDatabaseJobComplete(void* ref,DatabaseResult* result
 {
 	TreasuryManagerAsyncContainer* asynContainer = (TreasuryManagerAsyncContainer*)ref;
 
-
+	DataBinding* binding = mDatabase->CreateDataBinding(1);
 	switch(asynContainer->mQueryType)
 	{
 
@@ -531,7 +534,6 @@ void TreasuryManager::handleDatabaseJobComplete(void* ref,DatabaseResult* result
 			}
 
 			uint64 id;
-			DataBinding* binding = mDatabase->CreateDataBinding(1);
 			binding->addField(DFT_uint64,0,8);
 			result->GetNextRow(binding,&id);
 
@@ -554,11 +556,9 @@ void TreasuryManager::handleDatabaseJobComplete(void* ref,DatabaseResult* result
 
 		}
 		break;
-
 		case TREMQuery_BankTipTransaction:
 		{
 			uint32 error;
-			DataBinding* binding = mDatabase->CreateDataBinding(1);
 			binding->addField(DFT_uint32,0,4);
 			result->GetNextRow(binding,&error);
 
@@ -593,7 +593,6 @@ void TreasuryManager::handleDatabaseJobComplete(void* ref,DatabaseResult* result
 		case TREMQuery_BankTipUpdateGalaxyAccount:
 		{
 			uint32 error;
-			DataBinding* binding = mDatabase->CreateDataBinding(1);
 			binding->addField(DFT_uint32,0,4);
 			result->GetNextRow(binding,&error);
 
@@ -602,18 +601,21 @@ void TreasuryManager::handleDatabaseJobComplete(void* ref,DatabaseResult* result
 				gLogger->log(LogManager::DEBUG,"TreasuryManager::Account_TipSurcharge: error %u", error);
 			}
 		}
-		case TREMQuery_BankSafetyDeposit:
+		case TREMQuery_BankDepositBox:
 		{
+			Bank* bank = dynamic_cast<Bank*>(asynContainer->bank);
 			uint32 error;
-			DataBinding* binding = mDatabase->CreateDataBinding(1);
-			binding->addField(DFT_uint32,0,4);
+			binding->addField(DFT_uint32,0,10);
 			result->GetNextRow(binding,&error);
-			
-			//Bank* bank = dynamic_cast<Bank*>(asynContainer->player->getEquipManager()->getEquippedObject(CreatureEquipSlot_Bank));
-			//nothing in the bank, but still open it
-			gMessageLib->sendOpenedContainer(asynContainer->targetId, asynContainer->player);
+
+			if (error > 0)
+			{
+				gLogger->log(LogManager::DEBUG, "TreasuryManager::BankDepositBox: error %u", error);
+			}
+			//asynContainer->bank = dynamic_cast<PlayerObject*>(bank);
+			//tells client to open container ui
+			gMessageLib->sendOpenedContainer(bank->getId(), asynContainer->player);
 		}
-		break;
 		case TREMQuery_NULL:
 		{
 
@@ -622,7 +624,7 @@ void TreasuryManager::handleDatabaseJobComplete(void* ref,DatabaseResult* result
 
 		default:break;
 	}
-
+	mDatabase->DestroyDataBinding(binding);
 	delete(asynContainer);
 }
 

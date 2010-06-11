@@ -52,6 +52,7 @@ class DatabaseCallback;
 class DatabaseResult;
 class DispatchClient;
 class PlayerObject;
+class Bank;
 
 //======================================================================================================================
 enum GalaxyBankAccount
@@ -99,7 +100,7 @@ enum TREMQueryType
 	TREMQuery_BankTipgetId					=	1,
 	TREMQuery_BankTipTransaction			=	2,
 	TREMQuery_BankTipUpdateGalaxyAccount	=	3,
-	TREMQuery_BankSafetyDeposit				=   4
+	TREMQuery_BankDepositBox				=	4
 
 };
 //======================================================================================================================
@@ -119,6 +120,7 @@ class TreasuryManagerAsyncContainer
 		uint32				surcharge;
 		PlayerObject*		player;
 		PlayerObject*		target;
+		Bank*				bank;
 		uint64				targetId;
 		string				targetName;
 };

@@ -51,6 +51,9 @@ class Bank : public TangibleObject
 		void		setCredits(int32 credits){ mCredits = credits; }
 		bool		updateCredits(int32 amount);
 
+		virtual bool	checkCapacity(uint8 amount, PlayerObject* player = NULL, bool sendMsg = true);
+		virtual void	UpdateWorldPosition();
+
 		int8		getPlanet(){ return mPlanet; }
 		void		setPlanet(int8 planet){ mPlanet = planet; }
 	
@@ -59,6 +62,7 @@ class Bank : public TangibleObject
 		PlayerObject*	mParent;
 		ObjectList		mObjects;
 		int32			mCredits;
+		uint8			mMaxSlots;
 		int8			mPlanet;
 };
 
