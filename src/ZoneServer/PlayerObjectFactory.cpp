@@ -311,6 +311,11 @@ void PlayerObjectFactory::handleDatabaseJobComplete(void* ref,DatabaseResult* re
 			LotsContainer->mObject = playerObject;
 
 			mDatabase->ExecuteSqlAsync(this,LotsContainer,"SELECT sf_getLotCount(%I64u)",playerObject->getId());
+
+			/*QueryContainerBase* banksContainer = new(mQueryContainerPool.ordered_malloc()) QueryContainerBase(asyncContainer->mOfCallback,POFQuery_Banks,asyncContainer->mClient);
+			banksContainer->mObject = playerObject;
+
+			mDatabase->ExecuteSqlAsync(this,banksContainer,"SELECT id FROM items WHERE parent_id=%"PRIu64"",playerObject->getId()+BANK_OFFSET);*/
 		}
 		break;
 
@@ -345,7 +350,9 @@ void PlayerObjectFactory::handleDatabaseJobComplete(void* ref,DatabaseResult* re
 			mObjectLoadMap.insert(std::make_pair(playerObject->getId(),ilc));
 
 			// request inventory
-			mInventoryFactory->requestObject(this,playerObject->mId + 1,TanGroup_Inventory,TanType_CharInventory,asyncContainer->mClient);
+			mInventoryFactory->requestObject(this,playerObject->mId + INVENTORY_OFFSET,TanGroup_Inventory,TanType_CharInventory,asyncContainer->mClient);
+			//request bank
+			mInventoryFactory->requestObject(this, playerObject->mId + BANK_OFFSET, TanGroup_Container, TanType_Bank, asyncContainer->mClient);
 
 		}
 		break;
@@ -428,6 +435,24 @@ void PlayerObjectFactory::handleDatabaseJobComplete(void* ref,DatabaseResult* re
 			playerObject->setLots((uint8)maxLots);
 			gLogger->log(LogManager::DEBUG,"PlayerObjectFactory: %I64u has %u lots remaining",playerObject->getId(),maxLots);
 
+			mDatabase->DestroyDataBinding(binding);
+		}
+		case POFQuery_Banks:
+		{
+			PlayerObject* playerObject = dynamic_cast<PlayerObject*>(asyncContainer->mObject);
+
+			uint64 id;
+			DataBinding* binding = mDatabase->CreateDataBinding(1);
+			binding->addField(DFT_uint64,0,8);
+
+			uint64 count = result->getRowCount();
+
+			for(uint64 i = 0;i < count;i++)
+			{
+				result->GetNextRow(binding,&id);
+				gTangibleFactory->requestObject(this,id,TanGroup_Container, TanType_Bank,asyncContainer->mClient);
+
+			}
 			mDatabase->DestroyDataBinding(binding);
 		}
 		break;

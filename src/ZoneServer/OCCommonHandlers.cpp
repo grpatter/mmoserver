@@ -461,10 +461,9 @@ bool ObjectController::checkContainingContainer(uint64 containingContainer, uint
 	{
 		//it might be our inventory or the inventory of a creature were looting
 		//PlayerObject* player = dynamic_cast<PlayerObject*>(gWorldManager->getObjectById(playerId));
-		//+1 is inventory, +4 is bank...
-		if(containingContainer == (playerId+1) || containingContainer == (playerId+4))
+		if(containingContainer == (playerId+INVENTORY_OFFSET) || containingContainer == (playerId+BANK_OFFSET))
 		{
-			//its our inventory ... - return true
+			//its our inventory or our bank ... - return true
 			return true;
 		}
 

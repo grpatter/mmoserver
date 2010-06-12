@@ -604,16 +604,6 @@ void TreasuryManager::handleDatabaseJobComplete(void* ref,DatabaseResult* result
 		case TREMQuery_BankDepositBox:
 		{
 			Bank* bank = dynamic_cast<Bank*>(asynContainer->bank);
-			uint32 error;
-			binding->addField(DFT_uint32,0,10);
-			result->GetNextRow(binding,&error);
-
-			if (error > 0)
-			{
-				gLogger->log(LogManager::DEBUG, "TreasuryManager::BankDepositBox: error %u", error);
-			}
-			//asynContainer->bank = dynamic_cast<PlayerObject*>(bank);
-			//tells client to open container ui
 			gMessageLib->sendOpenedContainer(bank->getId(), asynContainer->player);
 		}
 		case TREMQuery_NULL:
