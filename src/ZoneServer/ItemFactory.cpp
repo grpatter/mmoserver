@@ -176,7 +176,7 @@ void ItemFactory::handleDatabaseJobComplete(void* ref,DatabaseResult* result)
 
 
 			// nothing to load ? handle our callback immediately
-			if(!count)
+ 			if(!count)
 			{
 				item->setLoadState(LoadState_Loaded);
 				asyncContainer->mOfCallback->handleObjectReady(asyncContainer->mObject,asyncContainer->mClient);

@@ -265,7 +265,8 @@ void TreasuryManager::bankOpenSafetyDepositContainer(PlayerObject* playerObject)
 				gMessageLib->sendSystemMessage(playerObject, L"You are not a member of this bank.");
 				return;
 			}
-			uint64 bankId = bank->getId();
+			gMessageLib->sendOpenedContainer(bank->getId(), playerObject);
+			/*uint64 bankId = bank->getId();
 			asContainer->player = playerObject;
 			asContainer->targetId = bankId;
 			asContainer->bank = bank;
@@ -274,7 +275,7 @@ void TreasuryManager::bankOpenSafetyDepositContainer(PlayerObject* playerObject)
 			" WHERE (container_types.name NOT LIKE 'unknown') AND (containers.parent_id = %"PRIu64"))"
 			" UNION (SELECT \'items\',items.id FROM items WHERE (parent_id=%"PRIu64"))"
 			" UNION (SELECT \'resource_containers\',resource_containers.id FROM resource_containers WHERE (parent_id=%"PRIu64"))",
-			bankId,bankId,bankId);
+			bankId,bankId,bankId);*/
 		}
 	}
 }
@@ -603,8 +604,8 @@ void TreasuryManager::handleDatabaseJobComplete(void* ref,DatabaseResult* result
 		}
 		case TREMQuery_BankDepositBox:
 		{
-			Bank* bank = dynamic_cast<Bank*>(asynContainer->bank);
-			gMessageLib->sendOpenedContainer(bank->getId(), asynContainer->player);
+			/*Bank* bank = dynamic_cast<Bank*>(asynContainer->bank);
+			gMessageLib->sendOpenedContainer(bank->getId(), asynContainer->player);*/
 		}
 		case TREMQuery_NULL:
 		{
