@@ -755,6 +755,9 @@
     <ClCompile Include="VehicleControllerFactory.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="MarksmanManager.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ActiveConversation.h">
@@ -1463,6 +1466,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="OCStructureHandlers.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="MarksmanManager.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="PostureChangeEvent.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

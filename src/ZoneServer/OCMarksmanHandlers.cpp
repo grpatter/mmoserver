@@ -35,7 +35,9 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #include "DatabaseManager/DatabaseResult.h"
 #include "Common/MessageFactory.h"
 #include "Common/Message.h"
-
+#include "PlayerObject.h"
+#include "MarksmanManager.h"
+#include "Utils/clock.h"
 
 
 //=============================================================================================================================
@@ -45,6 +47,12 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 
 void ObjectController::_handleTumbleToKneeling(uint64 targetId,Message* message,ObjectControllerCmdProperties* cmdProperties)
 {
+	PlayerObject* player = dynamic_cast<PlayerObject*>(mObject);
+	PlayerObject* target = dynamic_cast<PlayerObject*>(gWorldManager->getObjectById(targetId));
+	//TODO: Change this to return a bool when ObjectController is updated
+	
+	mHandlerCompleted = gMarksmanManager->performTumbleToKneeling(player, target, cmdProperties);
+
 } 
 
 //=============================================================================================================================
@@ -54,6 +62,11 @@ void ObjectController::_handleTumbleToKneeling(uint64 targetId,Message* message,
 
 void ObjectController::_handleTumbleToProne(uint64 targetId,Message* message,ObjectControllerCmdProperties* cmdProperties)
 {
+	PlayerObject* player = dynamic_cast<PlayerObject*>(mObject);
+	PlayerObject* target = dynamic_cast<PlayerObject*>(gWorldManager->getObjectById(targetId));
+	
+	//TODO: Change this to return a bool when ObjectController is updated
+	mHandlerCompleted = gMarksmanManager->performTumbleToProne(player, target, cmdProperties);
 } 
 
 //=============================================================================================================================
@@ -63,6 +76,11 @@ void ObjectController::_handleTumbleToProne(uint64 targetId,Message* message,Obj
 
 void ObjectController::_handleTumbleToStanding(uint64 targetId,Message* message,ObjectControllerCmdProperties* cmdProperties)
 {
+	PlayerObject* player = dynamic_cast<PlayerObject*>(mObject);
+	PlayerObject* target = dynamic_cast<PlayerObject*>(gWorldManager->getObjectById(targetId));
+	
+	//TODO: Change this to return a bool when ObjectController is updated
+	mHandlerCompleted = gMarksmanManager->performTumbleToStanding(player, target, cmdProperties);
 } 
 
 //=============================================================================================================================
@@ -72,6 +90,12 @@ void ObjectController::_handleTumbleToStanding(uint64 targetId,Message* message,
 
 void ObjectController::_handleTakeCover(uint64 targetId,Message* message,ObjectControllerCmdProperties* cmdProperties)
 {
+	//TODO impl this correctly. We will need some kind of 'CoverManager' to track status and other 
+	//factors from beyond this single player. See the wiki for details.
+	// Waiting on a proper CombatManager
+	PlayerObject* player = dynamic_cast<PlayerObject*>(mObject);
+	PlayerObject* target = dynamic_cast<PlayerObject*>(gWorldManager->getObjectById(targetId));
+	mHandlerCompleted = gMarksmanManager->performTakeCover(player, target, cmdProperties);
 } 
 
 //=============================================================================================================================
@@ -81,6 +105,10 @@ void ObjectController::_handleTakeCover(uint64 targetId,Message* message,ObjectC
 
 void ObjectController::_handleAim(uint64 targetId,Message* message,ObjectControllerCmdProperties* cmdProperties)
 {
+	//TODO impl this correctly
+	// Waiting on a proper CombatManager
+	PlayerObject* player = dynamic_cast<PlayerObject*>(mObject);
+	gMessageLib->sendCreatureAnimation(player, BString("aim"));//TODO find the correct anim
 } 
 
 //=============================================================================================================================

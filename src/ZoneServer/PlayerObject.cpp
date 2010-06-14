@@ -135,6 +135,7 @@ PlayerObject::PlayerObject()
 	registerEventFunction(this,&PlayerObject::onInjuryTreatment);
 	registerEventFunction(this,&PlayerObject::onWoundTreatment);
 	registerEventFunction(this,&PlayerObject::onQuickHealInjuryTreatment);
+	registerEventFunction(this,&PlayerObject::onPostureChangeEvent);
 	
 	mLots = gWorldConfig->getConfiguration<uint32>("Player_Max_Lots",(uint32)10);
 

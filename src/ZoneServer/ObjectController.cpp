@@ -460,6 +460,11 @@ bool ObjectController::_processCommandQueue()
 					}
 					break;
 				}
+				
+				//We need to actually consume the HAM assuming the handler came back properly.
+				if(consumeHam){
+					ObjectController::_consumeHam(cmdProperties);
+				}
 
 				// Do not mess with cooldowns for non combat commands...
 				if (cmdMsg->getCmdProperties()->mAddToCombatQueue)
@@ -486,6 +491,7 @@ bool ObjectController::_processCommandQueue()
 					gObjectControllerCommands->mCmdScriptListener.handleScriptEvent(cmdProperties->mCommandStr.getAnsi(),params);
 				}
 			}
+			//end
 
 			//its processed, so ack and delete it
 			if (message && cmdMsg->getSequence())
