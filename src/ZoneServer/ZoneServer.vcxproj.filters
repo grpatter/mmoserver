@@ -1474,5 +1474,8 @@
     <ClInclude Include="PostureChangeEvent.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="OCMarksmanHandlers.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

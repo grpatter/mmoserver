@@ -378,7 +378,8 @@ bool ObjectController::_processCommandQueue()
             // If a new style handler is found process it.
             if (message && it != gObjectControllerCommands->getCommandMap().end()) {
 
-              ((*it).second)(mObject, target, message, cmdProperties);
+              mHandlerCompleted = ((*it).second)(mObject, target, message, cmdProperties);
+			 // gLogger->log(LogManager::DEBUG,"ObjectController::processCommandQueue: Command: 0x%x returned: %d",command,mHandlerCompleted);
 							consumeHam = mHandlerCompleted;
             } else {
               // Otherwise, process the old style handler.

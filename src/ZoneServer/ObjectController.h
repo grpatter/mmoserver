@@ -354,12 +354,12 @@ class ObjectController : public DatabaseCallback, public ObjectFactoryCallback, 
 		void	_handleIntimidate2(uint64 targetId,Message* message,ObjectControllerCmdProperties* cmdProperties);
 		void	_handleWarcry2(uint64 targetId,Message* message,ObjectControllerCmdProperties* cmdProperties);
 
-		// marksman
-		void	_handleTumbleToKneeling(uint64 targetId,Message* message,ObjectControllerCmdProperties* cmdProperties);
-		void	_handleTumbleToProne(uint64 targetId,Message* message,ObjectControllerCmdProperties* cmdProperties);
-		void	_handleTumbleToStanding(uint64 targetId,Message* message,ObjectControllerCmdProperties* cmdProperties);
-		void	_handleTakeCover(uint64 targetId,Message* message,ObjectControllerCmdProperties* cmdProperties);
-		void	_handleAim(uint64 targetId,Message* message,ObjectControllerCmdProperties* cmdProperties);
+		// marksman - converted to 'new' style
+		//void	_handleTumbleToKneeling(uint64 targetId,Message* message,ObjectControllerCmdProperties* cmdProperties);
+		//void	_handleTumbleToProne(uint64 targetId,Message* message,ObjectControllerCmdProperties* cmdProperties);
+		//void	_handleTumbleToStanding(uint64 targetId,Message* message,ObjectControllerCmdProperties* cmdProperties);
+		//void	_handleTakeCover(uint64 targetId,Message* message,ObjectControllerCmdProperties* cmdProperties);
+		//void	_handleAim(uint64 targetId,Message* message,ObjectControllerCmdProperties* cmdProperties);
 
 		// custom methods
 		void	_endBurstRun(uint64 targetId,Message* message,ObjectControllerCmdProperties* cmdProperties);

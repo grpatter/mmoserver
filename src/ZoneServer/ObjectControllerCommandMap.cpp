@@ -36,6 +36,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #include "Common/Message.h"
 
 #include "OCStructureHandlers.h"
+#include "OCMarksmanHandlers.h"
 
 //======================================================================================================================
 
@@ -285,13 +286,8 @@ void ObjectControllerCommandMap::_registerCppHooks()
 	mCommandMap.insert(std::make_pair(opOCintimidate2, std::bind(&ObjectController::_handleIntimidate2, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4)));
 	mCommandMap.insert(std::make_pair(opOCwarcry2, std::bind(&ObjectController::_handleWarcry2, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4)));
 
-	// marksman
-	mCommandMap.insert(std::make_pair(opOCtumbletokneeling, std::bind(&ObjectController::_handleTumbleToKneeling, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4)));
-	mCommandMap.insert(std::make_pair(opOCtumbletoprone, std::bind(&ObjectController::_handleTumbleToProne, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4)));
-	mCommandMap.insert(std::make_pair(opOCtumbletostanding, std::bind(&ObjectController::_handleTumbleToStanding, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4)));
-	mCommandMap.insert(std::make_pair(opOCtakecover, std::bind(&ObjectController::_handleTakeCover, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4)));
-	mCommandMap.insert(std::make_pair(opOCaim, std::bind(&ObjectController::_handleAim, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4)));
-
+	// marksman -- Moved to new style hooks.
+	
 	//entertainer
 	mCommandMap.insert(std::make_pair(opOCstartdance, std::bind(&ObjectController::_handlestartdance, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4)));
 	mCommandMap.insert(std::make_pair(opOCstopdance, std::bind(&ObjectController::_handlestopdance, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4)));
@@ -517,7 +513,16 @@ void ObjectControllerCommandMap::_registerCppHooks()
 
 void ObjectControllerCommandMap::RegisterCppHooks_()
 {
-  command_map_.insert(std::make_pair(opMoveFurniture, std::bind(&HandleMoveFurniture, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4)));	
+	//structures
+	command_map_.insert(std::make_pair(opMoveFurniture, std::bind(&HandleMoveFurniture, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4)));	
+
+	//marksman
+	command_map_.insert(std::make_pair(opOCtumbletokneeling, std::bind(&_handleTumbleToKneeling, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4)));
+	command_map_.insert(std::make_pair(opOCtumbletoprone, std::bind(&_handleTumbleToProne, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4)));
+	command_map_.insert(std::make_pair(opOCtumbletostanding, std::bind(&_handleTumbleToStanding, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4)));
+	command_map_.insert(std::make_pair(opOCtakecover, std::bind(&_handleTakeCover, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4)));
+	command_map_.insert(std::make_pair(opOCaim, std::bind(&_handleAim, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4)));
+
 }
 
 //======================================================================================================================
