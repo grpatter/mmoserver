@@ -42,6 +42,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #include "InjuryTreatmentEvent.h"
 #include "QuickHealInjuryTreatmentEvent.h"
 #include "WoundTreatmentEvent.h"
+#include "PostureChangeEvent.h"
 #include "Common/DispatchClient.h"
 #include <map>
 
@@ -346,6 +347,7 @@ class PlayerObject : public CreatureObject
 		void				onInjuryTreatment(const InjuryTreatmentEvent* event);
 		void				onWoundTreatment(const WoundTreatmentEvent* event);
 		void				onQuickHealInjuryTreatment(const QuickHealInjuryTreatmentEvent* event);
+		void				onPostureChangeEvent(const PostureChangeEvent* event);
 								 
 
 		// cloning

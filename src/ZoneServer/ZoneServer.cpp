@@ -36,6 +36,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #include "ForageManager.h"
 #include "GroupManager.h"
 #include "MedicManager.h"
+#include "MarksmanManager.h"
 #include "NonPersistentItemFactory.h"
 #include "NonPersistentNpcFactory.h"
 #include "nonPersistantObjectFactory.h"
@@ -174,6 +175,7 @@ mDatabase(0)
 	TradeManager::Init(mDatabase,mMessageDispatch);
 	BuffManager::Init(mDatabase);
 	MedicManager::Init(mMessageDispatch);
+	MarksmanManager::Init(mMessageDispatch);
 	AdminManager::Init(mMessageDispatch);
 	EntertainerManager::Init(mDatabase,mMessageDispatch);
 	GroupManager::Init(mDatabase,mMessageDispatch);

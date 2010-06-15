@@ -205,7 +205,7 @@ enum object_controller_marksman_functions
 	opOCthreatenshot					= 0xee14ca1e,
 	opOCwarningshot						= 0xf44972f6,
 	opOCsuppressionfire1				= 0xf3f3d495,
-	opOCtumbletokneeling				= 0x49346510,
+	opOCtumbletokneeling				= 0x29346510,
 	opOCtumbletoprone					= 0x0b30c9b5,
 	opOCtumbletostanding				= 0x54314196,
 	opOCtakecover						= 0x3903080b,

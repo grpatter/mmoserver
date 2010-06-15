@@ -574,6 +574,31 @@ void PlayerObject::onLogout(const LogOutEvent* event)
 }
 
 //=============================================================================
+// this event manages a delayed posture chagne
+//
+void PlayerObject::onPostureChangeEvent(const PostureChangeEvent* event){
+	uint64 now = gWorldManager->GetCurrentGlobalTick();	
+	uint64 t = event->getExecTime();
+	
+	//gMessageLib->sendSystemMessage(this,L"PostureChangeEvent.");
+	if(now > t){
+		mPosture		= event->getNewPosture();
+		gMessageLib->sendSelfPostureUpdate(this);
+		
+		mHam.updateRegenRates();
+		updateMovementProperties();
+		gMessageLib->sendPostureAndStateUpdate(this);
+
+		gMessageLib->sendUpdateMovementProperties(this);
+	}
+	else{
+		mObjectController.addEvent(new PostureChangeEvent(event->getExecTime(), event->getNewPosture()), t-now);
+	}
+}
+
+
+
+//=============================================================================
 // this event manages the burstrun
 //
 void PlayerObject::onBurstRun(const BurstRunEvent* event)

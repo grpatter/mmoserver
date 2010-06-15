@@ -460,6 +460,19 @@ bool ObjectController::_processCommandQueue()
 					}
 					break;
 				}
+				
+				//We need consumer HAM and send messages if mHandlerCompleted came back true
+				//TODO update handlers to return true or false, and check that instead
+				if(mHandlerCompleted){		
+					if(consumeHam){
+						ObjectController::_consumeHam(cmdProperties);
+					}
+					string cbtSpam = cmdProperties->mCbtSpam;
+					if(cbtSpam.getLength() > 0){
+						gMessageLib->sendSystemMessage(player,L"","cbt_spam",cbtSpam.getAnsi());
+					}
+				}
+				//TODO: Make sure we're sending messages specified on handler true
 
 				// Do not mess with cooldowns for non combat commands...
 				if (cmdMsg->getCmdProperties()->mAddToCombatQueue)

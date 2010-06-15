@@ -184,6 +184,7 @@
     <ClCompile Include="ItemFactory.cpp" />
     <ClCompile Include="LairObject.cpp" />
     <ClCompile Include="ManufacturingSchematic.cpp" />
+    <ClCompile Include="MarksmanManager.cpp" />
     <ClCompile Include="Medicine.cpp" />
     <ClCompile Include="MedicManager.cpp" />
     <ClCompile Include="MissionBag.cpp" />
@@ -452,6 +453,7 @@
     <ClInclude Include="LairObject.h" />
     <ClInclude Include="LogOutEvent.h" />
     <ClInclude Include="ManufacturingSchematic.h" />
+    <ClInclude Include="MarksmanManager.h" />
     <ClInclude Include="Medicine.h" />
     <ClInclude Include="MedicManager.h" />
     <ClInclude Include="MissionBag.h" />
@@ -487,6 +489,7 @@
     <ClInclude Include="PlayerObjectFactory.h" />
     <ClInclude Include="PlayerStructure.h" />
     <ClInclude Include="PlayerStructureTerminal.h" />
+    <ClInclude Include="PostureChangeEvent.h" />
     <ClInclude Include="ProcessValidator.h" />
     <ClInclude Include="PVHam.h" />
     <ClInclude Include="PVPosture.h" />

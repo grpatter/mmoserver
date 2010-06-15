@@ -35,6 +35,9 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #include "DatabaseManager/DatabaseResult.h"
 #include "Common/MessageFactory.h"
 #include "Common/Message.h"
+#include "PlayerObject.h"
+#include "MarksmanManager.h"
+#include "Utils/clock.h"
 
 
 
@@ -42,45 +45,58 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 //
 // tumbletokneeling
 //
-
-void ObjectController::_handleTumbleToKneeling(uint64 targetId,Message* message,ObjectControllerCmdProperties* cmdProperties)
-{
+void ObjectController::_handleTumbleToKneeling(uint64 targetId,Message* message,ObjectControllerCmdProperties* cmdProperties){
+	PlayerObject* player = dynamic_cast<PlayerObject*>(mObject);
+	PlayerObject* target = dynamic_cast<PlayerObject*>(gWorldManager->getObjectById(targetId));
+	
+	mHandlerCompleted = gMarksmanManager->performTumbleToKneeling(player, target, cmdProperties);//TODO: Change this to return a bool when ObjectController is updated
 } 
 
 //=============================================================================================================================
 //
 // tumbletoprone
 //
-
-void ObjectController::_handleTumbleToProne(uint64 targetId,Message* message,ObjectControllerCmdProperties* cmdProperties)
-{
-} 
+void ObjectController::_handleTumbleToProne(uint64 targetId,Message* message,ObjectControllerCmdProperties* cmdProperties){
+	PlayerObject* player = dynamic_cast<PlayerObject*>(mObject);
+	PlayerObject* target = dynamic_cast<PlayerObject*>(gWorldManager->getObjectById(targetId));
+	
+	mHandlerCompleted = gMarksmanManager->performTumbleToProne(player, target, cmdProperties);//TODO: Change this to return a bool when ObjectController is updated
+}
 
 //=============================================================================================================================
 //
 // tumbletostanding
 //
+void ObjectController::_handleTumbleToStanding(uint64 targetId,Message* message,ObjectControllerCmdProperties* cmdProperties){
+	PlayerObject* player = dynamic_cast<PlayerObject*>(mObject);
+	PlayerObject* target = dynamic_cast<PlayerObject*>(gWorldManager->getObjectById(targetId));
 
-void ObjectController::_handleTumbleToStanding(uint64 targetId,Message* message,ObjectControllerCmdProperties* cmdProperties)
-{
+	mHandlerCompleted = gMarksmanManager->performTumbleToStanding(player, target, cmdProperties);//TODO: Change this to return a bool when ObjectController is updated
 } 
 
 //=============================================================================================================================
 //
 // takecover
 //
-
-void ObjectController::_handleTakeCover(uint64 targetId,Message* message,ObjectControllerCmdProperties* cmdProperties)
-{
+void ObjectController::_handleTakeCover(uint64 targetId,Message* message,ObjectControllerCmdProperties* cmdProperties){
+	//TODO impl this correctly. We will need some kind of 'CoverManager' to track status and other 
+	//factors from beyond this single player. See the wiki for details.
+	// Waiting on a proper CombatManager
+	PlayerObject* player = dynamic_cast<PlayerObject*>(mObject);
+	PlayerObject* target = dynamic_cast<PlayerObject*>(gWorldManager->getObjectById(targetId));
+	mHandlerCompleted = gMarksmanManager->performTakeCover(player, target, cmdProperties);
 } 
 
 //=============================================================================================================================
 //
 // aim
 //
-
-void ObjectController::_handleAim(uint64 targetId,Message* message,ObjectControllerCmdProperties* cmdProperties)
-{
+void ObjectController::_handleAim(uint64 targetId,Message* message,ObjectControllerCmdProperties* cmdProperties){
+	//TODO impl this correctly
+	// Waiting on a proper CombatManager
+	PlayerObject* player = dynamic_cast<PlayerObject*>(mObject);
+	gMessageLib->sendCreatureAnimation(player, BString("aim"));//TODO find the correct anim
+	mHandlerCompleted = false;
 } 
 
 //=============================================================================================================================
