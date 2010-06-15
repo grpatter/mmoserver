@@ -24,7 +24,11 @@ License along with this library; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 ---------------------------------------------------------------------------------------
 */
+
+//common incs
 #include "ObjectController.h"
+#include "OCMedicHandlers.h"
+
 #include <boost/regex.hpp>  // NOLINT
 #include "MedicManager.h"
 #include "ObjectController.h"
@@ -57,16 +61,17 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 // diagnose
 //
 
-void ObjectController::_handleDiagnose(uint64 targetId, Message* message,ObjectControllerCmdProperties* cmdProperties)
+bool _handleDiagnose(Object* object, Object* target, Message* message, ObjectControllerCmdProperties* cmdProperties)
 {
-	PlayerObject* Medic = dynamic_cast<PlayerObject*>(mObject);
-	PlayerObject* Target = dynamic_cast<PlayerObject*>(gWorldManager->getObjectById(targetId));
+	PlayerObject* Medic = dynamic_cast<PlayerObject*>(object);
+	PlayerObject* Target = dynamic_cast<PlayerObject*>(target);
 	if(Target != 0)
 	{
 		gMedicManager->Diagnose(Medic, Target);
+		return true;
 	} else {
 		gMessageLib->sendSystemMessage(Medic,L"","healing_response","healing_response_b6");
-		return;
+		return false;
 	}
 }
 
@@ -75,16 +80,18 @@ void ObjectController::_handleDiagnose(uint64 targetId, Message* message,ObjectC
 // healdamage
 //
 
-void ObjectController::_handleHealDamage(uint64 targetId, Message* message,ObjectControllerCmdProperties* cmdProperties)
+bool _handleHealDamage(Object* object, Object* target, Message* message, ObjectControllerCmdProperties* cmdProperties)
 {
-	PlayerObject* Medic = dynamic_cast<PlayerObject*>(mObject);
+	PlayerObject* Medic = dynamic_cast<PlayerObject*>(object);
 	PlayerObject* Target = dynamic_cast<PlayerObject*>(Medic->getHealingTarget(Medic));
 
-	mHandlerCompleted = gMedicManager->CheckMedicine(Medic, Target, cmdProperties, stim);
-	if (mHandlerCompleted)
+	if (gMedicManager->CheckMedicine(Medic, Target, cmdProperties, stim))
 	{
 		//call the event
 		gMedicManager->startInjuryTreatmentEvent(Medic);
+		return true;
+	}else{
+		return false;
 	}
 }
 
@@ -93,9 +100,9 @@ void ObjectController::_handleHealDamage(uint64 targetId, Message* message,Objec
 // healwound
 //
 
-void ObjectController::_handleHealWound(uint64 targetId,Message* message,ObjectControllerCmdProperties* cmdProperties)
+bool _handleHealWound(Object* object, Object* target, Message* message, ObjectControllerCmdProperties* cmdProperties)
 {
-	PlayerObject* Medic = dynamic_cast<PlayerObject*>(mObject);
+	PlayerObject* Medic = dynamic_cast<PlayerObject*>(object);
 	PlayerObject* Target = dynamic_cast<PlayerObject*>(Medic->getHealingTarget(Medic));
 
 	std::string messageResponse = gMedicManager->handleMessage(message,"(action|constitution|health|quickness|stamina|strength)");
@@ -103,6 +110,7 @@ void ObjectController::_handleHealWound(uint64 targetId,Message* message,ObjectC
 	{
 	  //you must specify a valid wound type
 	  gMessageLib->sendSystemMessage(Medic,L"","healing_response","healing_response_65");
+	  return false;
 	}
 	else
 	{
@@ -114,12 +122,13 @@ void ObjectController::_handleHealWound(uint64 targetId,Message* message,ObjectC
 			{
 				//call the event
 				gMedicManager->startWoundTreatmentEvent(Medic);
-				return;
+				return true;
 			}
 		}
-		else
+		else{
 			gMessageLib->sendSystemMessage(Medic,L"","healing_response","not_enough_mind");
-
+			return false;
+		}
 	}
 }
 
@@ -128,11 +137,15 @@ void ObjectController::_handleHealWound(uint64 targetId,Message* message,ObjectC
 // medicalforage
 //
 
-void ObjectController::_handleMedicalForage(uint64 targetId,Message* message,ObjectControllerCmdProperties* cmdProperties)
+bool _handleMedicalForage(Object* object, Object* target, Message* message, ObjectControllerCmdProperties* cmdProperties)
 {
-		PlayerObject* player = dynamic_cast<PlayerObject*>(mObject);
-	if(player)
+		PlayerObject* player = dynamic_cast<PlayerObject*>(object);
+	if(player){
 		gForageManager->startForage(player, ForageClass_Medic);
+		return true;
+	}else{
+		return false;
+	}
 }
 
 //=============================================================================================================================
@@ -140,9 +153,9 @@ void ObjectController::_handleMedicalForage(uint64 targetId,Message* message,Obj
 // tenddamage
 //
 
-void ObjectController::_handleTendDamage(uint64 targetId,Message* message,ObjectControllerCmdProperties* cmdProperties)
+bool _handleTendDamage(Object* object, Object* target, Message* message, ObjectControllerCmdProperties* cmdProperties)
 {
-	PlayerObject* Medic = dynamic_cast<PlayerObject*>(mObject);
+	PlayerObject* Medic = dynamic_cast<PlayerObject*>(object);
 	PlayerObject* Target = dynamic_cast<PlayerObject*>(Medic->getHealingTarget(Medic));
 
 	//check Medic has enough Mind
@@ -156,11 +169,15 @@ void ObjectController::_handleTendDamage(uint64 targetId,Message* message,Object
 			ham->updateBattleFatigue(2, true);
 			//call the event
 			gMedicManager->startInjuryTreatmentEvent(Medic);
-			return;
+			return true;
+		}else{
+			return false;
 		}
 	}
-	else
+	else{
 		gMessageLib->sendSystemMessage(Medic,L"","healing_response","not_enough_mind");
+		return false;
+	}
 
 }
 
@@ -169,9 +186,9 @@ void ObjectController::_handleTendDamage(uint64 targetId,Message* message,Object
 // tendwound
 //
 
-void ObjectController::_handleTendWound(uint64 targetId,Message* message,ObjectControllerCmdProperties* cmdProperties)
+bool _handleTendWound(Object* object, Object* target, Message* message, ObjectControllerCmdProperties* cmdProperties)
 {
-	PlayerObject* Medic = dynamic_cast<PlayerObject*>(mObject);
+	PlayerObject* Medic = dynamic_cast<PlayerObject*>(object);
 	PlayerObject* Target = dynamic_cast<PlayerObject*>(Medic->getHealingTarget(Medic));
 	//TODO:: add medic droid
 	/*EMLocationType loc = Medic->getPlayerLocation();
@@ -184,6 +201,7 @@ void ObjectController::_handleTendWound(uint64 targetId,Message* message,ObjectC
 	{
 	  //you must specify a valid wound type
 	  gMessageLib->sendSystemMessage(Medic,L"","healing_response","healing_response_65");
+	  return false;
 	}
 	else
 	{
@@ -198,11 +216,15 @@ void ObjectController::_handleTendWound(uint64 targetId,Message* message,ObjectC
 				ham->updateBattleFatigue(2, true);
 				//call the event
 				gMedicManager->startWoundTreatmentEvent(Medic);
-				return;
+				return true;
+			}else{
+				return false;
 			}
 		}
-		else
+		else{
 			gMessageLib->sendSystemMessage(Medic,L"","healing_response","not_enough_mind");
+			return false;
+		}
 
 	}
 	
@@ -213,10 +235,11 @@ void ObjectController::_handleTendWound(uint64 targetId,Message* message,ObjectC
 // firstaid
 //
 
-void ObjectController::_handleFirstAid(uint64 targetId,Message* message,ObjectControllerCmdProperties* cmdProperties)
+bool _handleFirstAid(Object* object, Object* target, Message* message, ObjectControllerCmdProperties* cmdProperties)
 {
-	//PlayerObject* Medic = dynamic_cast<PlayerObject*>(mObject);
+	//PlayerObject* Medic = dynamic_cast<PlayerObject*>(object);
 	//gMessageLib->sendSystemMessage(Medic, "First Aid has not been implemented yet. Sorry.");
+	return false;
 }
 
 //=============================================================================================================================
@@ -224,9 +247,9 @@ void ObjectController::_handleFirstAid(uint64 targetId,Message* message,ObjectCo
 // quickheal
 //
 
-void ObjectController::_handleQuickHeal(uint64 targetId,Message* message,ObjectControllerCmdProperties* cmdProperties)
+bool _handleQuickHeal(Object* object, Object* target, Message* message, ObjectControllerCmdProperties* cmdProperties)
 {
-	PlayerObject* Medic = dynamic_cast<PlayerObject*>(mObject);
+	PlayerObject* Medic = dynamic_cast<PlayerObject*>(object);
 	PlayerObject* Target = dynamic_cast<PlayerObject*>(Medic->getHealingTarget(Medic));
 
 	//check Medic has enough Mind
@@ -240,11 +263,15 @@ void ObjectController::_handleQuickHeal(uint64 targetId,Message* message,ObjectC
 			ham->updateBattleFatigue(2, true);
 			//call the event
 			gMedicManager->startQuickHealInjuryTreatmentEvent(Medic);
-			return;
+			return true;
+		}else{
+			return false;
 		}
 	}
-	else
+	else{
 		gMessageLib->sendSystemMessage(Medic,L"","healing_response","not_enough_mind");
+		return false;
+	}
 }
 
 //=============================================================================================================================
@@ -252,10 +279,11 @@ void ObjectController::_handleQuickHeal(uint64 targetId,Message* message,ObjectC
 // dragincapacitatedplayer
 //
 
-void ObjectController::_handleDragIncapacitatedPlayer(uint64 targetId,Message* message,ObjectControllerCmdProperties* cmdProperties)
+bool _handleDragIncapacitatedPlayer(Object* object, Object* target, Message* message, ObjectControllerCmdProperties* cmdProperties)
 {
 	//PlayerObject* Medic = dynamic_cast<PlayerObject*>(mObject);
 	//gMessageLib->sendSystemMessage(Medic, "Drag has not been implemented yet. Sorry.");
+	return false;
 }
 
 //=============================================================================================================================

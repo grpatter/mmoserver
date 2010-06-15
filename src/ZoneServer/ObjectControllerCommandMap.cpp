@@ -35,8 +35,10 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #include "DatabaseManager/DatabaseResult.h"
 #include "Common/Message.h"
 
+//OC<__>Handlers
 #include "OCStructureHandlers.h"
 #include "OCMarksmanHandlers.h"
+#include "OCMedicHandlers.h"
 
 //======================================================================================================================
 
@@ -324,16 +326,7 @@ void ObjectControllerCommandMap::_registerCppHooks()
 	mCommandMap.insert(std::make_pair(opOCforage, std::bind(&ObjectController::_handleForage, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4)));
 	mCommandMap.insert(std::make_pair(opOCthrowtrap, std::bind(&ObjectController::_handleThrowTrap, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4)));
 
-	// medic
-	mCommandMap.insert(std::make_pair(opOCdiagnose, std::bind(&ObjectController::_handleDiagnose, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4)));
-	mCommandMap.insert(std::make_pair(opOChealdamage, std::bind(&ObjectController::_handleHealDamage, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4)));
-	mCommandMap.insert(std::make_pair(opOChealwound, std::bind(&ObjectController::_handleHealWound, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4)));
-	mCommandMap.insert(std::make_pair(opOCmedicalforage, std::bind(&ObjectController::_handleMedicalForage, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4)));
-	mCommandMap.insert(std::make_pair(opOCtenddamage, std::bind(&ObjectController::_handleTendDamage, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4)));
-	mCommandMap.insert(std::make_pair(opOCtendwound, std::bind(&ObjectController::_handleTendWound, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4)));
-	mCommandMap.insert(std::make_pair(opOCfirstaid, std::bind(&ObjectController::_handleFirstAid, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4)));
-	mCommandMap.insert(std::make_pair(opOCquickheal, std::bind(&ObjectController::_handleQuickHeal, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4)));
-	mCommandMap.insert(std::make_pair(opOCdragincapacitatedplayer, std::bind(&ObjectController::_handleDragIncapacitatedPlayer, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4)));
+	// medic --moved to new style hooks
 
 	// bio - engineer
 	mCommandMap.insert(std::make_pair(opOCsampledna, std::bind(&ObjectController::_handleSampleDNA, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4)));
@@ -522,6 +515,18 @@ void ObjectControllerCommandMap::RegisterCppHooks_()
 	command_map_.insert(std::make_pair(opOCtumbletostanding, std::bind(&_handleTumbleToStanding, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4)));
 	command_map_.insert(std::make_pair(opOCtakecover, std::bind(&_handleTakeCover, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4)));
 	command_map_.insert(std::make_pair(opOCaim, std::bind(&_handleAim, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4)));
+
+	//medic
+	command_map_.insert(std::make_pair(opOCdiagnose, std::bind(&_handleDiagnose, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4)));
+	command_map_.insert(std::make_pair(opOChealdamage, std::bind(&_handleHealDamage, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4)));
+	command_map_.insert(std::make_pair(opOChealwound, std::bind(&_handleHealWound, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4)));
+	command_map_.insert(std::make_pair(opOCmedicalforage, std::bind(&_handleMedicalForage, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4)));
+	command_map_.insert(std::make_pair(opOCtenddamage, std::bind(&_handleTendDamage, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4)));
+	command_map_.insert(std::make_pair(opOCtendwound, std::bind(&_handleTendWound, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4)));
+	command_map_.insert(std::make_pair(opOCfirstaid, std::bind(&_handleFirstAid, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4)));
+	command_map_.insert(std::make_pair(opOCquickheal, std::bind(&_handleQuickHeal, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4)));
+	command_map_.insert(std::make_pair(opOCdragincapacitatedplayer, std::bind(&_handleDragIncapacitatedPlayer, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4)));
+
 
 }
 
