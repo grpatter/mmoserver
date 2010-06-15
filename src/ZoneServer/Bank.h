@@ -29,6 +29,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #define ANH_ZONESERVER_TANGIBLE_BANK_H
 
 #include "TangibleObject.h"
+#include <vector>
 
 class PlayerObject;
 
@@ -45,7 +46,7 @@ class Bank : public TangibleObject
 		~Bank();
 
 		void		setParent(PlayerObject* player){ mParent = player; }
-		ObjectList*	getObjects(){ return &mObjects; }
+		//ObjectList*	getObjects(){ return &mObjects; }
 
 		int32		getCredits(){ return mCredits; }
 		void		setCredits(int32 credits){ mCredits = credits; }

@@ -313,7 +313,10 @@ void PlayerObjectFactory::handleDatabaseJobComplete(void* ref,DatabaseResult* re
 			mDatabase->ExecuteSqlAsync(this,LotsContainer,"SELECT sf_getLotCount(%I64u)",playerObject->getId());
 
 			QueryContainerBase* banksContainer = new(mQueryContainerPool.ordered_malloc()) QueryContainerBase(asyncContainer->mOfCallback,POFQuery_Banks,asyncContainer->mClient);
-			banksContainer->mObject = playerObject;
+			Bank* bank = dynamic_cast<Bank*>(playerObject->getEquipManager()->getEquippedObject(CreatureEquipSlot_Bank));
+			banksContainer->mObject = bank;
+			banksContainer->mId = bank->getId();
+			banksContainer->mClient = asyncContainer->mClient;
 
 			mDatabase->ExecuteSqlAsync(this,banksContainer,"SELECT id FROM items WHERE parent_id=%"PRIu64"",playerObject->getId()+BANK_OFFSET);
 		}
@@ -439,13 +442,15 @@ void PlayerObjectFactory::handleDatabaseJobComplete(void* ref,DatabaseResult* re
 		}
 		case POFQuery_Banks:
 		{
-			PlayerObject* playerObject = dynamic_cast<PlayerObject*>(asyncContainer->mObject);
-
-			uint64 id;
 			DataBinding* binding = mDatabase->CreateDataBinding(1);
 			binding->addField(DFT_uint64,0,8);
+			Type1_QueryContainer queryContainer;
 
 			uint64 count = result->getRowCount();
+			if (asyncContainer->mId == NULL)
+				break;
+			mObjectLoadMap.insert(std::make_pair(asyncContainer->mId,new(mILCPool.ordered_malloc()) InLoadingContainer(asyncContainer->mObject,asyncContainer->mOfCallback,asyncContainer->mClient,(uint32)count)));
+			//Item* item = dynamic_cast<Item*>(gWorldManager->getObjectById(queryContainer.mId));
 			if (!count)
 			{
 				gLogger->log(LogManager::DEBUG,"PlayerObjectFactory: no items in player's bank");
@@ -454,9 +459,8 @@ void PlayerObjectFactory::handleDatabaseJobComplete(void* ref,DatabaseResult* re
 			}
 			for(uint64 i = 0;i < count;i++)
 			{
-				result->GetNextRow(binding,&id);
-				gTangibleFactory->requestObject(this,id,TanGroup_Item, 0,asyncContainer->mClient);
-
+				result->GetNextRow(binding,&queryContainer);
+				gTangibleFactory->requestObject(this,queryContainer.mId,TanGroup_Item, 0,asyncContainer->mClient);
 			}
 			mDatabase->DestroyDataBinding(binding);
 		}

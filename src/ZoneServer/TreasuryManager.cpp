@@ -265,17 +265,15 @@ void TreasuryManager::bankOpenSafetyDepositContainer(PlayerObject* playerObject)
 				gMessageLib->sendSystemMessage(playerObject, L"You are not a member of this bank.");
 				return;
 			}
+			ObjectIDList*			bankObjects = bank->getObjects();
+			ObjectIDList::iterator	listIt		= bankObjects->begin();
 			gMessageLib->sendOpenedContainer(bank->getId(), playerObject);
-			/*uint64 bankId = bank->getId();
-			asContainer->player = playerObject;
-			asContainer->targetId = bankId;
-			asContainer->bank = bank;
-			mDatabase->ExecuteSqlAsync(this,asContainer,
-			"(SELECT \'containers\',containers.id FROM containers INNER JOIN container_types ON (containers.container_type = container_types.id)"
-			" WHERE (container_types.name NOT LIKE 'unknown') AND (containers.parent_id = %"PRIu64"))"
-			" UNION (SELECT \'items\',items.id FROM items WHERE (parent_id=%"PRIu64"))"
-			" UNION (SELECT \'resource_containers\',resource_containers.id FROM resource_containers WHERE (parent_id=%"PRIu64"))",
-			bankId,bankId,bankId);*/
+			//loop items and send create message for each //test
+			while (listIt != bankObjects->end())
+			{
+				Item* bankItem = dynamic_cast<Item*>(gWorldManager->getObjectById((*listIt)));
+				gMessageLib->sendCreateObject(bankItem,playerObject,false);
+			}
 		}
 	}
 }
