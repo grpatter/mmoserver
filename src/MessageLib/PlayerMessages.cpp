@@ -179,6 +179,10 @@ bool MessageLib::sendBaselinesPLAY_8(PlayerObject* playerObject,PlayerObject* ta
 	WaypointList::iterator	waypointIt;
 	if(datapad){
 		waypointList		= datapad->getWaypoints();
+		if(!waypointList){
+			waypointList = new WaypointList();//we couldn't get theirs...make a new empty one? 
+			gLogger->log(LogManager::WARNING,"MessageLib::sendBaselinesPLAY_8: Failed to getWaypoints() for playerId:%u. waypList recreated (empty).", playerObject->getId());
+		}
 		waypointIt			= waypointList->begin();
 	}else{//Crashbug patch: http://paste.swganh.org/viewp.php?id=20100627075254-3882bd68067f13266819ae6d0c4428e4
 		gLogger->log(LogManager::WARNING,"MessageLib::sendBaselinesPLAY_8: Failed to find datapad for playerId:%u. Did not initialize waypList(s).", playerObject->getId());
