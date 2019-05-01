@@ -1,11 +1,27 @@
 /*
 ---------------------------------------------------------------------------------------
-This source file is part of swgANH (Star Wars Galaxies - A New Hope - Server Emulator)
-For more information, see http://www.swganh.org
+This source file is part of SWG:ANH (Star Wars Galaxies - A New Hope - Server Emulator)
 
+For more information, visit http://www.swganh.com
 
-Copyright (c) 2006 - 2010 The swgANH Team
+Copyright (c) 2006 - 2010 The SWG:ANH Team
+---------------------------------------------------------------------------------------
+Use of this source code is governed by the GPL v3 license that can be found
+in the COPYING file or at http://www.gnu.org/licenses/gpl-3.0.html
 
+This library is free software; you can redistribute it and/or
+modify it under the terms of the GNU Lesser General Public
+License as published by the Free Software Foundation; either
+version 2.1 of the License, or (at your option) any later version.
+
+This library is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+Lesser General Public License for more details.
+
+You should have received a copy of the GNU Lesser General Public
+License along with this library; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 ---------------------------------------------------------------------------------------
 */
 #include "FireworkManager.h"
@@ -14,6 +30,7 @@ Copyright (c) 2006 - 2010 The swgANH Team
 #include "WorldManager.h"
 #include "PlayerObject.h"
 #include "StaticObject.h"
+#include "StateManager.h"
 #include "UIManager.h"
 
 #include "MessageLib/MessageLib.h"
@@ -24,22 +41,22 @@ FireworkManager*	FireworkManager::mSingleton = NULL;
 class FireworkEvent
 {
 public:
-	TangibleObject* firework;
-	uint64 timeFired; //Time the firework was fired.
-	bool playerToldToStand;
-	PlayerObject* player; //Person who fired the Firework
+    TangibleObject* firework;
+    uint64 timeFired; //Time the firework was fired.
+    bool playerToldToStand;
+    PlayerObject* player; //Person who fired the Firework
 };
 
 FireworkManager::~FireworkManager(void)
 {
-	std::list<FireworkEvent*>::iterator it=fireworkEvents.begin();
-	std::list<FireworkEvent*>::iterator fEnd = fireworkEvents.end();
-	while( it != fEnd)
-	{
-		if(*it)
-			delete *it;
-		it = fireworkEvents.erase(it);
-	}
+    std::list<FireworkEvent*>::iterator it=fireworkEvents.begin();
+    std::list<FireworkEvent*>::iterator fEnd = fireworkEvents.end();
+    while( it != fEnd)
+    {
+        if(*it)
+            delete *it;
+        it = fireworkEvents.erase(it);
+    }
 }
 
 //===============================================================================00
@@ -47,20 +64,28 @@ FireworkManager::~FireworkManager(void)
 //
 TangibleObject* FireworkManager::createFirework(uint32 typeId, PlayerObject* player, const glm::vec3& position)
 {
-	//this is by definition a nonpersistant object - so move it there 
-	TangibleObject* firework = new TangibleObject();
-	firework->setTangibleGroup(TanGroup_Static);
-	//firework->setTangibleType();
+    if(!player) return NULL;
 
-	//Make the Player Sit
-	player->setCrouched();
+	if(player->states.checkState(CreatureState_Swimming))
+	{
+		//use the system message from suveying as we don't have an appropriate one especiially for this
+        gMessageLib->SendSystemMessage(::common::OutOfBand("error_message", "survey_swimming"), player);
+        return NULL;
+    }
+
+    //this is by definition a nonpersistant object - so move it there
+    TangibleObject* firework = new TangibleObject();
+    firework->setTangibleGroup(TanGroup_Static);
+    //firework->setTangibleType();
+
+    //Make the Player Sit
+    player->states.setPosture(CreaturePosture_Crouched);
 
     // Place the firework 1m in front of the player at the same heading.
-    firework->mPosition.x = player->mPosition.x + sin(glm::gtx::quaternion::angle(player->mDirection));
-    firework->mPosition.z = player->mPosition.z + cos(glm::gtx::quaternion::angle(player->mDirection));
-    firework->mPosition.y = player->mPosition.y;
+    firework->mDirection = player->mDirection;
 
-	firework->mDirection = player->mDirection;
+    firework->mPosition = player->mPosition;
+    firework->moveForward(1);
 
 	firework->setId(gWorldManager->getRandomNpId());
 
@@ -96,14 +121,13 @@ TangibleObject* FireworkManager::createFirework(uint32 typeId, PlayerObject* pla
 
 	default:
 		{
-			gLogger->logMsgF("Error creating firework, type:%u",MSG_NORMAL, typeId);
+			DLOG(WARNING) << "Error creating firework, type:" << typeId;
 			return NULL;
 		}
 	}
 
 	//add it to the world!!!
 	gWorldManager->addObject(firework);
-	gWorldManager->createObjectinWorld(player,firework);
 	
 	FireworkEvent* fevent = new FireworkEvent;
 
@@ -131,9 +155,9 @@ void FireworkManager::Process()
 	{
 		if(*it && (currentTime - (*it)->timeFired) > 2000 && (*it)->playerToldToStand == false) //2 sec
 		{
-			if((*it)->player->getPosture() == CreaturePosture_Crouched)
+			if((*it)->player->states.getPosture() == CreaturePosture_Crouched)
 			{
-				(*it)->player->setUpright();
+				gStateManager.setCurrentPostureState((*it)->player, CreaturePosture_Upright);
 				(*it)->playerToldToStand = true;
 			}
 			++it;
@@ -150,5 +174,4 @@ void FireworkManager::Process()
 			++it;
 		}
 	}
-
 }

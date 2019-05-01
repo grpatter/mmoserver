@@ -1,37 +1,61 @@
 /*
 ---------------------------------------------------------------------------------------
-This source file is part of swgANH (Star Wars Galaxies - A New Hope - Server Emulator)
-For more information, see http://www.swganh.org
+This source file is part of SWG:ANH (Star Wars Galaxies - A New Hope - Server Emulator)
 
+For more information, visit http://www.swganh.com
 
-Copyright (c) 2006 - 2010 The swgANH Team
+Copyright (c) 2006 - 2010 The SWG:ANH Team
+---------------------------------------------------------------------------------------
+Use of this source code is governed by the GPL v3 license that can be found
+in the COPYING file or at http://www.gnu.org/licenses/gpl-3.0.html
 
+This library is free software; you can redistribute it and/or
+modify it under the terms of the GNU Lesser General Public
+License as published by the Free Software Foundation; either
+version 2.1 of the License, or (at your option) any later version.
+
+This library is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+Lesser General Public License for more details.
+
+You should have received a copy of the GNU Lesser General Public
+License along with this library; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 ---------------------------------------------------------------------------------------
 */
 
-#include "FactoryCrate.h"
-#include "Inventory.h"
-#include "Item_Enums.h"
-#include "ObjectFactory.h"
-#include "PlayerObject.h"
-#include "StructureManager.h"
-#include "WorldManager.h"
-#include "ZoneOpcodes.h"
+#include "ZoneServer/FactoryCrate.h"
+
+#include <cassert>
+
+#include "Utils/colors.h"
+
+#include "Common/Crc.h"
+
+#include "DatabaseManager/Database.h"
+
+#include "NetworkManager/Message.h"
+#include "NetworkManager/MessageFactory.h"
 
 #include "MessageLib/MessageLib.h"
 
-#include "Common/Message.h"
-#include "Common/MessageFactory.h"
+#include "ZoneServer/Inventory.h"
+#include "ZoneServer/Item_Enums.h"
+#include "ZoneServer/ObjectFactory.h"
+#include "ZoneServer/PlayerObject.h"
+#include "ZoneServer/StructureManager.h"
+#include "ZoneServer/WorldManager.h"
+#include "ZoneServer/ContainerManager.h"
+#include "ZoneServer/ZoneOpcodes.h"
 
-//
-#include "DatabaseManager/Database.h"
-#include "Utils/colors.h"
-#include <cassert>
 
 //=============================================================================
 
 FactoryCrate::FactoryCrate() : Item()
 {
+    mTempAmount = 0;
+    mSlotCount = 0;
 }
 
 //=============================================================================
@@ -45,18 +69,6 @@ FactoryCrate::~FactoryCrate()
 
 void FactoryCrate::handleObjectMenuSelect(uint8 messageType,Object* srcObject)
 {
-	if(PlayerObject* player = dynamic_cast<PlayerObject*>(srcObject))
-	{
-		switch(messageType)
-		{
-			case radId_itemUse:
-			{
-				
-			}
-
-		}
-
-	}
 }
 
 //=============================================================================
@@ -64,71 +76,71 @@ void FactoryCrate::handleObjectMenuSelect(uint8 messageType,Object* srcObject)
 void FactoryCrate::sendAttributes(PlayerObject* playerObject)
 {
 
-	if(!(playerObject->isConnected()))
-		return;
+    if(!(playerObject->isConnected()))
+        return;
 
-	AttributeMap*				iAttributeMap		= this->getLinkedObject()->getAttributeMap();
-	AttributeOrderList*			iAttributeOrderList	= this->getLinkedObject()->getAttributeOrder();
+    AttributeMap*				iAttributeMap		= this->getLinkedObject()->getAttributeMap();
+    AttributeOrderList*			iAttributeOrderList	= this->getLinkedObject()->getAttributeOrder();
 
-	Message* newMessage;
+    Message* newMessage;
 
-	gMessageFactory->StartMessage();
-	gMessageFactory->addUint32(opAttributeListMessage);
-	gMessageFactory->addUint64(mId);
+    gMessageFactory->StartMessage();
+    gMessageFactory->addUint32(opAttributeListMessage);
+    gMessageFactory->addUint64(mId);
 
-	gMessageFactory->addUint32(2 + mAttributeMap.size()+iAttributeMap->size());
+    gMessageFactory->addUint32(2 + mAttributeMap.size()+iAttributeMap->size());
 
-	string	tmpValueStr = string(BSTRType_Unicode16,64);
-	string	value,aStr;
+    BString	value,aStr;
 
-	tmpValueStr.setLength(swprintf(tmpValueStr.getUnicode16(),50,L"%u/%u",mMaxCondition - mDamage,mMaxCondition));
+    wchar_t temp[64];
+    swprintf(temp,50,L"%u/%u",mMaxCondition - mDamage,mMaxCondition);
 
-	gMessageFactory->addString(BString("condition"));
-	gMessageFactory->addString(tmpValueStr);
+    gMessageFactory->addString(BString("condition"));
+    gMessageFactory->addString(temp);
 
-	AttributeMap::iterator			mapIt;
-	AttributeOrderList::iterator	orderIt = mAttributeOrderList.begin();
+    AttributeMap::iterator			mapIt;
+    AttributeOrderList::iterator	orderIt = mAttributeOrderList.begin();
 
-	
 
-	while(orderIt != mAttributeOrderList.end())
-	{
-		mapIt = mAttributeMap.find(*orderIt);
 
-		gMessageFactory->addString(gWorldManager->getAttributeKey((*mapIt).first));
+    while(orderIt != mAttributeOrderList.end())
+    {
+        mapIt = mAttributeMap.find(*orderIt);
 
-		value = (*mapIt).second.c_str();
-		value.convert(BSTRType_Unicode16);
+        gMessageFactory->addString(gWorldManager->getAttributeKey((*mapIt).first));
 
-		gMessageFactory->addString(value);
+        value = (*mapIt).second.c_str();
+        value.convert(BSTRType_Unicode16);
 
-		++orderIt;
-	}
+        gMessageFactory->addString(value);
 
-	gMessageFactory->addString(BString("factory_attribs"));
-	aStr = "\\#"SOE_RED" --------------";
-	aStr.convert(BSTRType_Unicode16);
-	gMessageFactory->addString(aStr);
+        ++orderIt;
+    }
 
-	orderIt = iAttributeOrderList->begin();
+    gMessageFactory->addString(BString("factory_attribs"));
+    aStr = "\\#"SOE_RED" --------------";
+    aStr.convert(BSTRType_Unicode16);
+    gMessageFactory->addString(aStr);
 
-	while(orderIt != iAttributeOrderList->end())
-	{
-		mapIt = iAttributeMap->find(*orderIt);
+    orderIt = iAttributeOrderList->begin();
 
-		gMessageFactory->addString(gWorldManager->getAttributeKey((*mapIt).first));
+    while(orderIt != iAttributeOrderList->end())
+    {
+        mapIt = iAttributeMap->find(*orderIt);
 
-		value = (*mapIt).second.c_str();
-		value.convert(BSTRType_Unicode16);
+        gMessageFactory->addString(gWorldManager->getAttributeKey((*mapIt).first));
 
-		gMessageFactory->addString(value);
+        value = (*mapIt).second.c_str();
+        value.convert(BSTRType_Unicode16);
 
-		++orderIt;
-	}
+        gMessageFactory->addString(value);
 
-	newMessage = gMessageFactory->EndMessage();
+        ++orderIt;
+    }
 
-	(playerObject->getClient())->SendChannelAUnreliable(newMessage, playerObject->getAccountId(), CR_Client, 9);
+    newMessage = gMessageFactory->EndMessage();
+
+    (playerObject->getClient())->SendChannelAUnreliable(newMessage, playerObject->getAccountId(), CR_Client, 9);
 }
 
 //=============================================================================
@@ -136,95 +148,84 @@ void FactoryCrate::sendAttributes(PlayerObject* playerObject)
 void FactoryCrate::prepareCustomRadialMenu(CreatureObject* creatureObject, uint8 itemCount)
 {
 
-	RadialMenu* radial	= new RadialMenu();
+    RadialMenu* radial	= new RadialMenu();
 
-	radial->addItem(1,0,radId_itemUse,radAction_ObjCallback,"");
-	radial->addItem(2,0,radId_examine,radAction_ObjCallback,"");
-	radial->addItem(3,0,radId_itemDestroy,radAction_ObjCallback,"");
-	RadialMenuPtr radialPtr(radial);
-	mRadialMenu = radialPtr;
+    radial->addItem(1,0,radId_itemUse,radAction_ObjCallback,"");
+    radial->addItem(2,0,radId_examine,radAction_ObjCallback,"");
+    radial->addItem(3,0,radId_itemDestroy,radAction_ObjCallback,"");
+    RadialMenuPtr radialPtr(radial);
+    mRadialMenu = radialPtr;
 }
 
 
 TangibleObject*	FactoryCrate::getLinkedObject()
 {
-	ObjectIDList*			ol = this->getObjects();
-	ObjectIDList::iterator	it = ol->begin();
+    ObjectIDList*			ol = this->getObjects();
+    ObjectIDList::iterator	it = ol->begin();
 
-	//just get the first linked object - crates only have the one
+    //just get the first linked object - crates only have the one
 
-	TangibleObject* tO = dynamic_cast<TangibleObject*>(gWorldManager->getObjectById((*it)));
-	if(!tO)
-	{
-		assert(false && "FactoryCrate::getLinkedObject WorldManager did not return a valid TangibleObject");
-		return NULL;
-	}
+    TangibleObject* tO = dynamic_cast<TangibleObject*>(gWorldManager->getObjectById((*it)));
+    if(!tO)
+    {
+        assert(false && "FactoryCrate::getLinkedObject WorldManager did not return a valid TangibleObject");
+        return NULL;
+    }
 
-	return tO;
+    return tO;
 
 }
 
 int32 FactoryCrate::decreaseContent(uint32 amount)
 {
-	uint32 crateAmount = 0;
-	if(this->hasAttribute("factory_count"))
-	{
-		crateAmount = this->getAttribute<int>("factory_count");
-	}
-	else
-	{
-		this->setAttributeIncDB("factory_count","1");
-		crateAmount = 1;
-	}
+    uint32 crateAmount = 0;
+    if(this->hasAttribute("factory_count"))
+    {
+        crateAmount = this->getAttribute<int>("factory_count");
+    }
+    else
+    {
+        this->setAttributeIncDB("factory_count","1");
+        crateAmount = 1;
+    }
 
-	int32 newAmount = crateAmount - amount;
+    int32 newAmount = crateAmount - amount;
 
-	if(newAmount < 0)
-	{
-		//??? If we came in here and there was no attrib for this crate
-		//....no matter what 'amount' is (unless it's 0) we're going to fail hardcore.
-		//Lets try to recover from this DB error by returning 0.
-		//assert(false); 
-		return 0;
-	}
+    if(newAmount < 0)
+    {
+        //??? If we came in here and there was no attrib for this crate
+        //....no matter what 'amount' is (unless it's 0) we're going to fail hardcore.
+        //Lets try to recover from this DB error by returning 0.
+        //assert(false);
+        newAmount = 0;
+    }
 
-	this->setAttribute("factory_count",boost::lexical_cast<std::string>(newAmount));
-	gWorldManager->getDatabase()->ExecuteSqlAsync(0,0,"UPDATE item_attributes SET value='%i' WHERE item_id=%"PRIu64" AND attribute_id=%u",newAmount,this->getId(),AttrType_factory_count);
+    this->setAttribute("factory_count",boost::lexical_cast<std::string>(newAmount));
+    gWorldManager->getDatabase()->executeSqlAsync(0,0,"UPDATE %s.item_attributes SET value='%i' WHERE item_id=%" PRIu64 " AND attribute_id=%u",gWorldManager->getDatabase()->galaxy(),newAmount,this->getId(),AttrType_factory_count);
 
-	return newAmount;
+
+    return newAmount;
 }
 
 //========================================================================================
 //used by the factoryfactory to update hoppercontent when looking at a hopper
 //
-void FactoryCrate::upDateFactoryVolume(string amount)
-{
-	if(!this->hasAttribute("factory_count"))
-	{
-		return;
-	}
-	
-	std::string v = this->getAttribute<std::string>("factory_count");
-	BString value = v.c_str();
-		
-	if(value.getCrc() == amount.getCrc())
-	{
-		return;
-	}
-	this->setAttribute("factory_count",amount.getAnsi());
+void FactoryCrate::upDateFactoryVolume(const std::string& amount) {
+    if(!hasAttribute("factory_count")) {
+        return;
+    }
 
-	PlayerObjectSet*			knownPlayers	= this->getKnownPlayers();
-	PlayerObjectSet::iterator	playerIt		= knownPlayers->begin();
+    std::string current_amount = getAttribute<std::string>("factory_count");
+    if(current_amount == amount) {
+        return;
+    }
 
-	while(playerIt != knownPlayers->end())
-	{
-		PlayerObject* player = (*playerIt);
-		if(player)
-			gMessageLib->sendUpdateCrateContent(this,player);
+    setAttribute("factory_count", amount);
 
-		playerIt++;
-	}
-
+    Object* parent = gWorldManager->getObjectById(getParentId());
+    gContainerManager->sendToRegisteredWatchers(parent, [this] (PlayerObject* const player)	{
+        gMessageLib->sendUpdateCrateContent(this,player);
+    });
 }
 
 

@@ -1,136 +1,84 @@
 /*
 ---------------------------------------------------------------------------------------
-This source file is part of swgANH (Star Wars Galaxies - A New Hope - Server Emulator)
-For more information, see http://www.swganh.org
+This source file is part of SWG:ANH (Star Wars Galaxies - A New Hope - Server Emulator)
 
+For more information, visit http://www.swganh.com
 
-Copyright (c) 2006 - 2010 The swgANH Team
+Copyright (c) 2006 - 2010 The SWG:ANH Team
+---------------------------------------------------------------------------------------
+Use of this source code is governed by the GPL v3 license that can be found
+in the COPYING file or at http://www.gnu.org/licenses/gpl-3.0.html
 
+This library is free software; you can redistribute it and/or
+modify it under the terms of the GNU Lesser General Public
+License as published by the Free Software Foundation; either
+version 2.1 of the License, or (at your option) any later version.
+
+This library is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+Lesser General Public License for more details.
+
+You should have received a copy of the GNU Lesser General Public
+License along with this library; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 ---------------------------------------------------------------------------------------
 */
 
 #include "BadgeRegionFactory.h"
 #include "BadgeRegion.h"
-#include "ObjectFactoryCallback.h"
-#include "LogManager/LogManager.h"
 #include "DatabaseManager/Database.h"
 #include "DatabaseManager/DatabaseResult.h"
-#include "DatabaseManager/DataBinding.h"
+
+#include <cppconn/resultset.h>
 
 #include "Utils/utils.h"
 
-//=============================================================================
-
-bool				BadgeRegionFactory::mInsFlag    = false;
-BadgeRegionFactory*	BadgeRegionFactory::mSingleton  = NULL;
-
-//======================================================================================================================
-
-BadgeRegionFactory*	BadgeRegionFactory::Init(Database* database)
-{
-	if(!mInsFlag)
-	{
-		mSingleton = new BadgeRegionFactory(database);
-		mInsFlag = true;
-		return mSingleton;
-	}
-	else
-		return mSingleton;
-}
-
-//=============================================================================
-
 BadgeRegionFactory::BadgeRegionFactory(Database* database) : FactoryBase(database)
-{
-	_setupDatabindings();
-}
+{}
 
 //=============================================================================
 
 BadgeRegionFactory::~BadgeRegionFactory()
-{
-	_destroyDatabindings();
-
-	mInsFlag = false;
-	delete(mSingleton);
-}
-
-//=============================================================================
+{}
 
 void BadgeRegionFactory::handleDatabaseJobComplete(void* ref,DatabaseResult* result)
 {
-	QueryContainerBase* asyncContainer = reinterpret_cast<QueryContainerBase*>(ref);
-
-	switch(asyncContainer->mQueryType)
-	{
-		case BadgeFQuery_MainData:
-		{
-			BadgeRegion* badgeRegion = _createBadgeRegion(result);
-
-			if(badgeRegion->getLoadState() == LoadState_Loaded && asyncContainer->mOfCallback)
-				asyncContainer->mOfCallback->handleObjectReady(badgeRegion,asyncContainer->mClient);
-			else
-			{
-
-			}
-		}
-		break;
-
-		default:break;
-	}
-
-	mQueryContainerPool.free(asyncContainer);
 }
-
 //=============================================================================
 
-void BadgeRegionFactory::requestObject(ObjectFactoryCallback* ofCallback,uint64 id,uint16 subGroup,uint16 subType,DispatchClient* client)
+void BadgeRegionFactory::requestObject(ObjectFactoryCallback* ofCallback,uint64 id, uint16 subGroup, uint16 subType, DispatchClient* client)
 {
-	mDatabase->ExecuteSqlAsync(this,new(mQueryContainerPool.ordered_malloc()) QueryContainerBase(ofCallback,BadgeFQuery_MainData,client),
-								"SELECT badge_regions.id,badge_regions.badge_id,planet_regions.region_name,planet_regions.region_file,planet_regions.x,planet_regions.z,"
-								"planet_regions.width,planet_regions.height,badge_regions.parent_id"
-								" FROM badge_regions"
-								" INNER JOIN planet_regions ON (badge_regions.region_id = planet_regions.region_id)"
-								" WHERE (badge_regions.id = %"PRIu64")",id);
+    // Setup our statement
+    int8 sql[128];
+    sprintf(sql, "CALL %s.sp_BadgeGetByRegion(%" PRIu64 ");", mDatabase->galaxy(),  id);
+
+    mDatabase->executeAsyncProcedure(sql, [=](DatabaseResult* result) {
+        if(!result) {
+            return;
+        }
+
+        std::unique_ptr<sql::ResultSet>& result_set = result->getResultSet();
+
+        if (!result_set->next()) {
+            LOG(WARNING) << "Unable to load badges with region id: " << id;
+            return;
+        }
+        std::shared_ptr<BadgeRegion> badge_region = std::make_shared<BadgeRegion>(result_set->getUInt(2));
+
+        badge_region->setId(result_set->getUInt64(1));
+        badge_region->setRegionName(result_set->getString(3));
+        badge_region->setNameFile(result_set->getString(4));
+        badge_region->mPosition.x = result_set->getDouble(5);
+        badge_region->mPosition.z = result_set->getDouble(6);
+        badge_region->setWidth(result_set->getDouble(7));
+        badge_region->setHeight(result_set->getDouble(8));
+        badge_region->setParentId(result_set->getUInt64(9));
+        badge_region->setLoadState(LoadState_Loaded);
+
+        ofCallback->handleObjectReady(badge_region);
+    });
+
 }
 
-//=============================================================================
-
-BadgeRegion* BadgeRegionFactory::_createBadgeRegion(DatabaseResult* result)
-{
-	BadgeRegion*	badgeRegion = new BadgeRegion();
-
-	uint64 count = result->getRowCount();
-
-	result->GetNextRow(mBadgeRegionBinding,badgeRegion);
-
-	badgeRegion->setLoadState(LoadState_Loaded);
-
-	return badgeRegion;
-}
-
-//=============================================================================
-
-void BadgeRegionFactory::_setupDatabindings()
-{
-	mBadgeRegionBinding = mDatabase->CreateDataBinding(9);
-	mBadgeRegionBinding->addField(DFT_uint64,offsetof(BadgeRegion,mId),8,0);
-	mBadgeRegionBinding->addField(DFT_uint32,offsetof(BadgeRegion,mBadgeId),4,1);
-	mBadgeRegionBinding->addField(DFT_bstring,offsetof(BadgeRegion,mRegionName),64,2);
-	mBadgeRegionBinding->addField(DFT_bstring,offsetof(BadgeRegion,mNameFile),64,3);
-	mBadgeRegionBinding->addField(DFT_float,offsetof(BadgeRegion,mPosition.x),4,4);
-	mBadgeRegionBinding->addField(DFT_float,offsetof(BadgeRegion,mPosition.z),4,5);
-	mBadgeRegionBinding->addField(DFT_float,offsetof(BadgeRegion,mWidth),4,6);
-	mBadgeRegionBinding->addField(DFT_float,offsetof(BadgeRegion,mHeight),4,7);
-	mBadgeRegionBinding->addField(DFT_uint64,offsetof(BadgeRegion,mParentId),8,8);
-}
-
-//=============================================================================
-
-void BadgeRegionFactory::_destroyDatabindings()
-{
-	mDatabase->DestroyDataBinding(mBadgeRegionBinding);
-}
-
-//=============================================================================
 

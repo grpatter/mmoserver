@@ -1,11 +1,27 @@
 /*
 ---------------------------------------------------------------------------------------
-This source file is part of swgANH (Star Wars Galaxies - A New Hope - Server Emulator)
-For more information, see http://www.swganh.org
+This source file is part of SWG:ANH (Star Wars Galaxies - A New Hope - Server Emulator)
 
+For more information, visit http://www.swganh.com
 
-Copyright (c) 2006 - 2010 The swgANH Team
+Copyright (c) 2006 - 2010 The SWG:ANH Team
+---------------------------------------------------------------------------------------
+Use of this source code is governed by the GPL v3 license that can be found
+in the COPYING file or at http://www.gnu.org/licenses/gpl-3.0.html
 
+This library is free software; you can redistribute it and/or
+modify it under the terms of the GNU Lesser General Public
+License as published by the Free Software Foundation; either
+version 2.1 of the License, or (at your option) any later version.
+
+This library is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+Lesser General Public License for more details.
+
+You should have received a copy of the GNU Lesser General Public
+License along with this library; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 ---------------------------------------------------------------------------------------
 */
 
@@ -13,12 +29,12 @@ Copyright (c) 2006 - 2010 The swgANH Team
 #include "ObjectControllerOpcodes.h"
 #include "ObjectControllerCommandMap.h"
 #include "MessageLib/MessageLib.h"
-#include "LogManager/LogManager.h"
+
 #include "DatabaseManager/Database.h"
 #include "DatabaseManager/DatabaseResult.h"
 #include "DatabaseManager/DataBinding.h"
-#include "Common/Message.h"
-#include "Common/MessageFactory.h"
+#include "NetworkManager/Message.h"
+#include "NetworkManager/MessageFactory.h"
 
 //=============================================================================================================================
 //
@@ -27,7 +43,7 @@ Copyright (c) 2006 - 2010 The swgANH Team
 
 void ObjectController::_handleAnimalScare(uint64 targetId,Message* message,ObjectControllerCmdProperties* cmdProperties)
 {
-} 
+}
 
 //=============================================================================================================================
 //
@@ -36,7 +52,7 @@ void ObjectController::_handleAnimalScare(uint64 targetId,Message* message,Objec
 
 void ObjectController::_handleForceLightningSingle1(uint64 targetId,Message* message,ObjectControllerCmdProperties* cmdProperties)
 {
-} 
+}
 
 //=============================================================================================================================
 //
@@ -45,7 +61,7 @@ void ObjectController::_handleForceLightningSingle1(uint64 targetId,Message* mes
 
 void ObjectController::_handleForceLightningSingle2(uint64 targetId,Message* message,ObjectControllerCmdProperties* cmdProperties)
 {
-} 
+}
 
 //=============================================================================================================================
 //
@@ -54,7 +70,7 @@ void ObjectController::_handleForceLightningSingle2(uint64 targetId,Message* mes
 
 void ObjectController::_handleForceLightningCone1(uint64 targetId,Message* message,ObjectControllerCmdProperties* cmdProperties)
 {
-} 
+}
 
 //=============================================================================================================================
 //
@@ -63,7 +79,7 @@ void ObjectController::_handleForceLightningCone1(uint64 targetId,Message* messa
 
 void ObjectController::_handleForceLightningCone2(uint64 targetId,Message* message,ObjectControllerCmdProperties* cmdProperties)
 {
-} 
+}
 
 //=============================================================================================================================
 //
@@ -72,7 +88,7 @@ void ObjectController::_handleForceLightningCone2(uint64 targetId,Message* messa
 
 void ObjectController::_handleMindblast1(uint64 targetId,Message* message,ObjectControllerCmdProperties* cmdProperties)
 {
-} 
+}
 
 //=============================================================================================================================
 //
@@ -81,7 +97,7 @@ void ObjectController::_handleMindblast1(uint64 targetId,Message* message,Object
 
 void ObjectController::_handleMindblast2(uint64 targetId,Message* message,ObjectControllerCmdProperties* cmdProperties)
 {
-} 
+}
 
 //=============================================================================================================================
 //
@@ -90,7 +106,7 @@ void ObjectController::_handleMindblast2(uint64 targetId,Message* message,Object
 
 void ObjectController::_handleAnimalCalm(uint64 targetId,Message* message,ObjectControllerCmdProperties* cmdProperties)
 {
-} 
+}
 
 //=============================================================================================================================
 //
@@ -99,7 +115,7 @@ void ObjectController::_handleAnimalCalm(uint64 targetId,Message* message,Object
 
 void ObjectController::_handleAnimalAttack(uint64 targetId,Message* message,ObjectControllerCmdProperties* cmdProperties)
 {
-} 
+}
 
 //=============================================================================================================================
 //
@@ -108,7 +124,7 @@ void ObjectController::_handleAnimalAttack(uint64 targetId,Message* message,Obje
 
 void ObjectController::_handleForceWeaken1(uint64 targetId,Message* message,ObjectControllerCmdProperties* cmdProperties)
 {
-} 
+}
 
 //=============================================================================================================================
 //
@@ -117,7 +133,7 @@ void ObjectController::_handleForceWeaken1(uint64 targetId,Message* message,Obje
 
 void ObjectController::_handleForceWeaken2(uint64 targetId,Message* message,ObjectControllerCmdProperties* cmdProperties)
 {
-} 
+}
 
 //=============================================================================================================================
 //
@@ -126,7 +142,7 @@ void ObjectController::_handleForceWeaken2(uint64 targetId,Message* message,Obje
 
 void ObjectController::_handleForceIntimidate1(uint64 targetId,Message* message,ObjectControllerCmdProperties* cmdProperties)
 {
-} 
+}
 
 //=============================================================================================================================
 //
@@ -135,7 +151,7 @@ void ObjectController::_handleForceIntimidate1(uint64 targetId,Message* message,
 
 void ObjectController::_handleForceIntimidate2(uint64 targetId,Message* message,ObjectControllerCmdProperties* cmdProperties)
 {
-} 
+}
 
 //=============================================================================================================================
 //
@@ -144,7 +160,7 @@ void ObjectController::_handleForceIntimidate2(uint64 targetId,Message* message,
 
 void ObjectController::_handleForceThrow1(uint64 targetId,Message* message,ObjectControllerCmdProperties* cmdProperties)
 {
-} 
+}
 
 //=============================================================================================================================
 //
@@ -153,7 +169,7 @@ void ObjectController::_handleForceThrow1(uint64 targetId,Message* message,Objec
 
 void ObjectController::_handleForceThrow2(uint64 targetId,Message* message,ObjectControllerCmdProperties* cmdProperties)
 {
-} 
+}
 
 //=============================================================================================================================
 //
@@ -162,7 +178,7 @@ void ObjectController::_handleForceThrow2(uint64 targetId,Message* message,Objec
 
 void ObjectController::_handleForceKnockdown1(uint64 targetId,Message* message,ObjectControllerCmdProperties* cmdProperties)
 {
-} 
+}
 
 //=============================================================================================================================
 //
@@ -171,7 +187,7 @@ void ObjectController::_handleForceKnockdown1(uint64 targetId,Message* message,O
 
 void ObjectController::_handleForceKnockdown2(uint64 targetId,Message* message,ObjectControllerCmdProperties* cmdProperties)
 {
-} 
+}
 
 //=============================================================================================================================
 //
@@ -180,7 +196,7 @@ void ObjectController::_handleForceKnockdown2(uint64 targetId,Message* message,O
 
 void ObjectController::_handleForceKnockdown3(uint64 targetId,Message* message,ObjectControllerCmdProperties* cmdProperties)
 {
-} 
+}
 
 //=============================================================================================================================
 //
@@ -189,7 +205,7 @@ void ObjectController::_handleForceKnockdown3(uint64 targetId,Message* message,O
 
 void ObjectController::_handleForceChoke(uint64 targetId,Message* message,ObjectControllerCmdProperties* cmdProperties)
 {
-} 
+}
 
 //=============================================================================================================================
 //
@@ -198,7 +214,7 @@ void ObjectController::_handleForceChoke(uint64 targetId,Message* message,Object
 
 void ObjectController::_handleJediMindTrick(uint64 targetId,Message* message,ObjectControllerCmdProperties* cmdProperties)
 {
-} 
+}
 
 //=============================================================================================================================
 

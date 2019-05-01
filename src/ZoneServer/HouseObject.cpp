@@ -1,12 +1,28 @@
 
 /*
 ---------------------------------------------------------------------------------------
-This source file is part of swgANH (Star Wars Galaxies - A New Hope - Server Emulator)
-For more information, see http://www.swganh.org
+This source file is part of SWG:ANH (Star Wars Galaxies - A New Hope - Server Emulator)
 
+For more information, visit http://www.swganh.com
 
-Copyright (c) 2006 - 2010 The swgANH Team
+Copyright (c) 2006 - 2010 The SWG:ANH Team
+---------------------------------------------------------------------------------------
+Use of this source code is governed by the GPL v3 license that can be found
+in the COPYING file or at http://www.gnu.org/licenses/gpl-3.0.html
 
+This library is free software; you can redistribute it and/or
+modify it under the terms of the GNU Lesser General Public
+License as published by the Free Software Foundation; either
+version 2.1 of the License, or (at your option) any later version.
+
+This library is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+Lesser General Public License for more details.
+
+You should have received a copy of the GNU Lesser General Public
+License along with this library; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 ---------------------------------------------------------------------------------------
 */
 #include "ObjectFactory.h"
@@ -31,11 +47,11 @@ Copyright (c) 2006 - 2010 The swgANH Team
 
 HouseObject::HouseObject() : BuildingObject()
 {
-	mType = ObjType_Building;
-	
-	setWidth(64);
-	setHeight(64);
-	
+    mType = ObjType_Building;
+
+    setWidth(64);
+    setHeight(64);
+
 }
 
 //=============================================================================
@@ -49,30 +65,30 @@ HouseObject::~HouseObject()
 
 void HouseObject::checkCellPermission(PlayerObject* player)
 {
-	
 
-	if(this->getPublic())
-	{
-		//structure is public - are we banned ?
-		StructureAsyncCommand command;
-		command.Command = Structure_Command_CellEnterDenial;
-		command.PlayerId = player->getId();
-		command.StructureId = this->getId();
-		
-		gStructureManager->checkNameOnPermissionList(this->getId(),player->getId(),player->getFirstName().getAnsi(),"BAN",command);
 
-	}
-	else
-	{
-		//structure is private - do we have access ?
-		StructureAsyncCommand command;
-		command.Command = Structure_Command_CellEnter;
-		command.PlayerId = player->getId();
-		command.StructureId = this->getId();
-		
-		gStructureManager->checkNameOnPermissionList(this->getId(),player->getId(),player->getFirstName().getAnsi(),"ENTRY",command);
+    if(this->getPublic())
+    {
+        //structure is public - are we banned ?
+        StructureAsyncCommand command;
+        command.Command = Structure_Command_CellEnterDenial;
+        command.PlayerId = player->getId();
+        command.StructureId = this->getId();
 
-	}	
+        gStructureManager->checkNameOnPermissionList(this->getId(),player->getId(),player->getFirstName().getAnsi(),"BAN",command);
+
+    }
+    else
+    {
+        //structure is private - do we have access ?
+        StructureAsyncCommand command;
+        command.Command = Structure_Command_CellEnter;
+        command.PlayerId = player->getId();
+        command.StructureId = this->getId();
+
+        gStructureManager->checkNameOnPermissionList(this->getId(),player->getId(),player->getFirstName().getAnsi(),"ENTRY",command);
+
+    }
 }
 
 
@@ -82,12 +98,11 @@ void HouseObject::checkCellPermission(PlayerObject* player)
 
 void HouseObject::handleObjectReady(Object* object,DispatchClient* client, uint64 hopper)
 {
-	Item* item = dynamic_cast<Item*>(gWorldManager->getObjectById(hopper));
-	if(!item)
-	{
-		gLogger->logMsgF("FactoryObject::handleObjectReady::could not find Hopper",MSG_HIGH);
-		assert(false && "HouseObject::handleObjectReady could not find hopper");
-	}
+    Item* item = dynamic_cast<Item*>(gWorldManager->getObjectById(hopper));
+    if(!item)
+    {
+        assert(false && "HouseObject::handleObjectReady could not find hopper");
+    }
 }
 
 
@@ -97,75 +112,55 @@ void HouseObject::handleObjectReady(Object* object,DispatchClient* client, uint6
 
 void HouseObject::handleObjectMenuSelect(uint8 messageType,Object* srcObject)
 {
-	PlayerObject* player = dynamic_cast<PlayerObject*>(srcObject);
-	if(!player)
-	{	
-		gLogger->logMsgF("FactoryObject::handleObjectMenuSelect::could not find player",MSG_HIGH);
-		return;
-	}
-	
+    PlayerObject* player = dynamic_cast<PlayerObject*>(srcObject);
+    if(!player)
+    {
+        return;
+    }
+
 }
 
 //=============================================================================
 // ´not needed - this is handled over the structures terminal
 void HouseObject::prepareCustomRadialMenu(CreatureObject* creatureObject, uint8 itemCount)
 {
-	
+
 }
 
 
 
 void HouseObject::handleDatabaseJobComplete(void* ref,DatabaseResult* result)
 {
-	StructureManagerAsyncContainer* asynContainer = (StructureManagerAsyncContainer*)ref;
+    StructureManagerAsyncContainer* asynContainer = (StructureManagerAsyncContainer*)ref;
 
 //	switch(asynContainer->mQueryType)
 //	{
 
-		
+
 //		default:break;
 
 //	}
 
-	SAFE_DELETE(asynContainer);
+    SAFE_DELETE(asynContainer);
 }
 
 
 bool HouseObject::hasAdmin(uint64 id)
 {
-	ObjectIDList		adminList =	getHousingList();
-	
-	ObjectIDList::iterator it =	 adminList.begin();
+    ObjectIDList		adminList =	getHousingList();
 
-	while (it != adminList.end())
-	{
-		if( id == (*it))
-			return true;
+    ObjectIDList::iterator it =	 adminList.begin();
 
-		it++;
-	}
-	return false;
+    while (it != adminList.end())
+    {
+        if( id == (*it))
+            return true;
+
+        it++;
+    }
+    return false;
 }
 
-void HouseObject::prepareDestruction()
-{
-	//iterate through all the cells - do they need to be deleted ?
-	//place players inside a cell in the world
-	CellObjectList*				cellList	= getCellList();
-	CellObjectList::iterator	cellIt		= cellList->begin();
-
-	while(cellIt != cellList->end())
-	{
-		CellObject* cell = (*cellIt);
-					
-		//remove items in the building from the world 
-		//place players and their pets in the maincell
-		cell->prepareDestruction();
-
-		++cellIt;
-	}
-
-}
 
 
 

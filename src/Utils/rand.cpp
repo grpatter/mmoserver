@@ -1,11 +1,27 @@
 /*
 ---------------------------------------------------------------------------------------
-This source file is part of swgANH (Star Wars Galaxies - A New Hope - Server Emulator)
-For more information, see http://www.swganh.org
+This source file is part of SWG:ANH (Star Wars Galaxies - A New Hope - Server Emulator)
 
+For more information, visit http://www.swganh.com
 
-Copyright (c) 2006 - 2010 The swgANH Team
+Copyright (c) 2006 - 2010 The SWG:ANH Team
+---------------------------------------------------------------------------------------
+Use of this source code is governed by the GPL v3 license that can be found
+in the COPYING file or at http://www.gnu.org/licenses/gpl-3.0.html
 
+This library is free software; you can redistribute it and/or
+modify it under the terms of the GNU Lesser General Public
+License as published by the Free Software Foundation; either
+version 2.1 of the License, or (at your option) any later version.
+
+This library is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+Lesser General Public License for more details.
+
+You should have received a copy of the GNU Lesser General Public
+License along with this library; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 ---------------------------------------------------------------------------------------
 */
 
@@ -44,6 +60,12 @@ Copyright (c) 2006 - 2010 The swgANH Team
  and is highly recommended for speed and simplicity.
  */
 
+#include <stdlib.h>
+#include <assert.h>
+
+#include "rand.h"
+#include "clock.h"
+
 static unsigned int mwc1616_x = 1;
 static unsigned int mwc1616_y = 2;
 
@@ -58,12 +80,6 @@ unsigned int rand_mwc1616(void) {
     return (mwc1616_x<<16)+(mwc1616_y&0xffff);
 }
 
-#include <stdlib.h>
-#include <assert.h>
-
-#include "rand.h"
-#include "clock.h"
-
 //======================================================================================================================
 
 Anh_Utils::Random*	Anh_Utils::Random::mSingleton = NULL;
@@ -72,12 +88,12 @@ Anh_Utils::Random*	Anh_Utils::Random::mSingleton = NULL;
 
 Anh_Utils::Random* Anh_Utils::Random::getSingleton()
 {
-	if (!mSingleton)
-	{
-		mSingleton = new Anh_Utils::Random();
-		srand((uint32)(Anh_Utils::Clock::getSingleton()->getLocalTime()));
-	}
-	return mSingleton;
+    if (!mSingleton)
+    {
+        mSingleton = new Anh_Utils::Random();
+        srand((uint32)(Anh_Utils::Clock::getSingleton()->getLocalTime()));
+    }
+    return mSingleton;
 }
 
 //==============================================================================================================================
@@ -95,7 +111,7 @@ Anh_Utils::Random::~Random()
 
 void Anh_Utils::Random::seedRand(const uint32 seed) const
 {
-	srand(seed);
+    srand(seed);
 }
 
 //======================================================================================================================

@@ -1,61 +1,96 @@
 /*
 ---------------------------------------------------------------------------------------
-This source file is part of swgANH (Star Wars Galaxies - A New Hope - Server Emulator)
-For more information, see http://www.swganh.org
+This source file is part of SWG:ANH (Star Wars Galaxies - A New Hope - Server Emulator)
 
+For more information, visit http://www.swganh.com
 
-Copyright (c) 2006 - 2010 The swgANH Team
+Copyright (c) 2006 - 2010 The SWG:ANH Team
+---------------------------------------------------------------------------------------
+Use of this source code is governed by the GPL v3 license that can be found
+in the COPYING file or at http://www.gnu.org/licenses/gpl-3.0.html
 
+This library is free software; you can redistribute it and/or
+modify it under the terms of the GNU Lesser General Public
+License as published by the Free Software Foundation; either
+version 2.1 of the License, or (at your option) any later version.
+
+This library is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+Lesser General Public License for more details.
+
+You should have received a copy of the GNU Lesser General Public
+License along with this library; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 ---------------------------------------------------------------------------------------
 */
 
+#include "ZoneServer/Bank.h"
 
-#include "Bank.h"
-#include "PlayerObject.h"
-#include "WorldManager.h"
-#include "MessageLib/MessageLib.h"
+#include <sstream>
+
 #include "DatabaseManager/Database.h"
 
-//=============================================================================
+#include "MessageLib/MessageLib.h"
 
-Bank::Bank() : TangibleObject(),
-mCredits(0),
-mPlanet(-1)
+#include "ZoneServer/PlayerObject.h"
+#include "ZoneServer/WorldManager.h"
+
+using std::stringstream;
+
+Bank::Bank(PlayerObject* owner)
+    : TangibleObject()
+    , owner_(owner)
+    , credits_(0)
+    , planet_(-1)
 {
-	mTanGroup	= TanGroup_PlayerInternal;
-	mTanType	= TanType_Bank;
+    mId = owner->getId() + BANK_OFFSET;
+    mTanGroup = TanGroup_PlayerInternal;
+    mTanType = TanType_Bank;
 }
 
-//=============================================================================
 
-Bank::~Bank()
-{
-	ObjectList::iterator it = mObjects.begin();
-	while(it != mObjects.end())
-	{
-		delete(*it);
-		mObjects.erase(it);
-		it = mObjects.begin();
-	}
+Bank::~Bank() {}
+
+
+int Bank::credits() const {
+    return credits_;
 }
 
-//=============================================================================
 
-bool Bank::updateCredits(int32 amount)
-{
-	if(mCredits + amount < 0)
-		return(false);
-
-	mCredits += amount;
-
-	if(mParent->getType() == ObjType_Player)
-		gMessageLib->sendBankCreditsUpdate(dynamic_cast<PlayerObject*>(mParent));
-
-	gWorldManager->getDatabase()->ExecuteSqlAsync(NULL,NULL,"UPDATE banks set credits=credits+%i WHERE id=%"PRIu64"",amount,mId);
-
-	return(true);
+void Bank::credits(int credits) {
+    credits_ = credits;
 }
 
-//=============================================================================
+bool Bank::updateCredits(int32_t amount) {
+    // No transaction is accepted if it causes the account to go below 0.
+    if (credits_ + amount < 0) {
+        return false;
+    }
+
+    credits(credits_ + amount);
+
+    gMessageLib->sendBankCreditsUpdate(owner_);
+
+    stringstream query;
+    query << "UPDATE "<<gWorldManager->getDatabase()->galaxy()<<".banks SET credits=" << credits_ << " WHERE id=" << mId;
+
+    gWorldManager->getDatabase()->executeAsyncSql(query);
+
+    return true;
+}
 
 
+void Bank::owner(PlayerObject* owner) {
+    owner_ = owner;
+}
+
+
+int8_t Bank::planet() const {
+    return planet_;
+}
+
+
+void Bank::planet(int8_t planet) {
+    planet_ = planet;
+}

@@ -1,11 +1,27 @@
 /*
 ---------------------------------------------------------------------------------------
-This source file is part of swgANH (Star Wars Galaxies - A New Hope - Server Emulator)
-For more information, see http://www.swganh.org
+This source file is part of SWG:ANH (Star Wars Galaxies - A New Hope - Server Emulator)
 
+For more information, visit http://www.swganh.com
 
-Copyright (c) 2006 - 2010 The swgANH Team
+Copyright (c) 2006 - 2010 The SWG:ANH Team
+---------------------------------------------------------------------------------------
+Use of this source code is governed by the GPL v3 license that can be found
+in the COPYING file or at http://www.gnu.org/licenses/gpl-3.0.html
 
+This library is free software; you can redistribute it and/or
+modify it under the terms of the GNU Lesser General Public
+License as published by the Free Software Foundation; either
+version 2.1 of the License, or (at your option) any later version.
+
+This library is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+Lesser General Public License for more details.
+
+You should have received a copy of the GNU Lesser General Public
+License along with this library; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 ---------------------------------------------------------------------------------------
 */
 
@@ -15,7 +31,7 @@ Copyright (c) 2006 - 2010 The swgANH Team
 #include "ObjectControllerCommandMap.h"
 
 PVState::PVState(ObjectController* controller)
-: ProcessValidator(controller)
+    : ProcessValidator(controller)
 {}
 
 PVState::~PVState()
@@ -25,26 +41,21 @@ bool PVState::validate(uint32 &reply1, uint32 &reply2, uint64 targetId, uint32 o
 {
     CreatureObject* creature = dynamic_cast<CreatureObject*>(mController->getObject());
 
-    // check our states
-    if(!creature || !cmdProperties || (creature->getState() & cmdProperties->mStates) != 0)
+    // if this command doesn't require state checks skip it, otherwise check our states
+    if(creature && cmdProperties && (cmdProperties->mStates != 0) && (creature->states.getAction() & cmdProperties->mStates) != 0)
     {
-
-		if(!creature)
-			gLogger->logMsgF("ObjController::PVState::validate: creature not found %"PRIu64"",MSG_HIGH,mController->getObject()->getId());
-
-		if((creature->getState() & cmdProperties->mStates) != 0)
-			gLogger->logMsgF("ObjController::PVState::validate: state denial state :  %"PRIu64"",MSG_HIGH,((creature->getState() & cmdProperties->mStates)));
-
-        reply1 = 0;
-        reply2 = 0;
-
-		gLogger->logMsgF("ObjController::PVState::validate: state denial state Command crc :  %u",MSG_HIGH,cmdProperties->mCmdCrc);
-		//handle canceling of crafting session if it was denied
-		
-        
-        return false;
+		if(creature->states.checkStates(cmdProperties->mStates))
+		{
+			reply1 = kCannotDoWhileState;
+			reply2 = mController->getLowestCommonBit(creature->states.getAction(), cmdProperties->mStates);
+			return false;
+		}
+		if (cmdProperties->mPostureMask !=0 && ((cmdProperties->mPostureMask & creature->states.getPosture()) != 0))
+		{
+			reply1 = kCannotDoWhileLocomotion;
+			reply2 = mController->getPostureValidator(creature->states.getLocomotion());
+			return false;
+		}
     }
-    
     return true;
 }
-

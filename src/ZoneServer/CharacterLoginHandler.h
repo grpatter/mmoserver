@@ -1,11 +1,27 @@
 /*
 ---------------------------------------------------------------------------------------
-This source file is part of swgANH (Star Wars Galaxies - A New Hope - Server Emulator)
-For more information, see http://www.swganh.org
+This source file is part of SWG:ANH (Star Wars Galaxies - A New Hope - Server Emulator)
 
+For more information, visit http://www.swganh.com
 
-Copyright (c) 2006 - 2010 The swgANH Team
+Copyright (c) 2006 - 2010 The SWG:ANH Team
+---------------------------------------------------------------------------------------
+Use of this source code is governed by the GPL v3 license that can be found
+in the COPYING file or at http://www.gnu.org/licenses/gpl-3.0.html
 
+This library is free software; you can redistribute it and/or
+modify it under the terms of the GNU Lesser General Public
+License as published by the Free Software Foundation; either
+version 2.1 of the License, or (at your option) any later version.
+
+This library is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+Lesser General Public License for more details.
+
+You should have received a copy of the GNU Lesser General Public
+License along with this library; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 ---------------------------------------------------------------------------------------
 */
 
@@ -14,10 +30,9 @@ Copyright (c) 2006 - 2010 The swgANH Team
 
 #include "ObjectFactoryCallback.h"
 #include "DatabaseManager/DatabaseCallback.h"
-#include "Common/MessageDispatchCallback.h"
 
-#include <boost/thread/recursive_mutex.hpp>
 #include <glm/glm.hpp>
+#include <set>
 
 //======================================================================================================================
 
@@ -27,6 +42,9 @@ class MessageDispatch;
 class PlayerObject;
 
 //======================================================================================================================
+
+
+typedef std::set<uint64>				ObjectIDSet;
 
 enum CLHCallBack
 {
@@ -49,7 +67,7 @@ public:
 	CLHCallBack					callBack;
 };
 
-class CharacterLoginHandler : public MessageDispatchCallback,public ObjectFactoryCallback, public DatabaseCallback
+class CharacterLoginHandler : public ObjectFactoryCallback, public DatabaseCallback
 {
 	public:
 
@@ -59,14 +77,13 @@ class CharacterLoginHandler : public MessageDispatchCallback,public ObjectFactor
 		// DatabaseCallback
 		virtual void			handleDatabaseJobComplete(void* ref,DatabaseResult* result);
 
-		  // Inherited from MessageDispatchCallback
-		virtual void	handleDispatchMessage(uint32 opcode, Message* message, DispatchClient* client);
-
 		  // ObjectFactoryCallback
 		virtual void	handleObjectReady(Object* object,DispatchClient* client);
 
 	private:
-
+        void    _processCmdSceneReady(Message* message, DispatchClient* client);
+        void	_processSelectCharacter(Message* message, DispatchClient* client);
+        void	_processNewbieTutorialResponse(Message* message, DispatchClient* client);
 		void    _processClusterClientDisconnect(Message* message, DispatchClient* client);
 		void    _processClusterZoneTransferApprovedByTicket(Message* message, DispatchClient* client);
 		void    _processClusterZoneTransferApprovedByPosition(Message* message, DispatchClient* client);
@@ -76,13 +93,13 @@ class CharacterLoginHandler : public MessageDispatchCallback,public ObjectFactor
 		MessageDispatch*			mMessageDispatch;
 
 		uint32						mZoneId;
-        boost::recursive_mutex		mSessionMutex;
+        
+		ObjectIDSet					playerZoneList;
 };
 
 
 
 
 #endif // ANH_ZONESERVER_CHARACTERLOGINHANDLER_H
-
 
 

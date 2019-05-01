@@ -1,11 +1,27 @@
 /*
 ---------------------------------------------------------------------------------------
-This source file is part of swgANH (Star Wars Galaxies - A New Hope - Server Emulator)
-For more information, see http://www.swganh.org
+This source file is part of SWG:ANH (Star Wars Galaxies - A New Hope - Server Emulator)
 
+For more information, visit http://www.swganh.com
 
-Copyright (c) 2006 - 2010 The swgANH Team
+Copyright (c) 2006 - 2010 The SWG:ANH Team
+---------------------------------------------------------------------------------------
+Use of this source code is governed by the GPL v3 license that can be found
+in the COPYING file or at http://www.gnu.org/licenses/gpl-3.0.html
 
+This library is free software; you can redistribute it and/or
+modify it under the terms of the GNU Lesser General Public
+License as published by the Free Software Foundation; either
+version 2.1 of the License, or (at your option) any later version.
+
+This library is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+Lesser General Public License for more details.
+
+You should have received a copy of the GNU Lesser General Public
+License along with this library; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 ---------------------------------------------------------------------------------------
 */
 
@@ -24,79 +40,126 @@ Copyright (c) 2006 - 2010 The swgANH Team
 
 struct FactoryHopperItem
 {
-		uint64			HarvesterID;
-		uint64			ResourceID;
-		float			Quantity;
+    uint64			HarvesterID;
+    uint64			ResourceID;
+    float			Quantity;
 };
 
 class FactoryObject :	public PlayerStructure, public DatabaseCallback
 {
-	friend class FactoryFactory;
+    friend class FactoryFactory;
 
-	public:
+public:
 
-		FactoryObject();
-		~FactoryObject();
+    FactoryObject();
+    ~FactoryObject();
 
-		virtual void	handleDatabaseJobComplete(void* ref,DatabaseResult* result);
-		
-		virtual void	handleObjectReady(Object* object,DispatchClient* client, uint64 hopper);
+    virtual void	handleDatabaseJobComplete(void* ref,DatabaseResult* result);
 
-		FactoryFamily	getFactoryFamily(){ return mFactoryFamily; }
-		void			setFactoryFamily(FactoryFamily ff){ mFactoryFamily = ff; }
+    virtual void	handleObjectReady(Object* object,DispatchClient* client, uint64 hopper);
 
-		uint32			getLoadCount(){ return mTotalLoadCount; }
-		uint32			decLoadCount(){ return (mTotalLoadCount-1); }
-		void			setLoadCount(uint32 count){ mTotalLoadCount = count; }
+    FactoryFamily	getFactoryFamily() {
+        return mFactoryFamily;
+    }
+    void			setFactoryFamily(FactoryFamily ff) {
+        mFactoryFamily = ff;
+    }
 
-		bool			getActive(){ return mActive; }
-		void			setActive(bool value){ mActive = value; }
+    uint32			getLoadCount() {
+        return mTotalLoadCount;
+    }
+    uint32			decLoadCount() {
+        return (mTotalLoadCount-1);
+    }
+    void			setLoadCount(uint32 count) {
+        mTotalLoadCount = count;
+    }
 
-		virtual void	ResetRadialMenu(){mRadialMenu.reset();RadialMenu* radial	= NULL;RadialMenuPtr radialPtr(radial);	mRadialMenu = radialPtr;}
-		void			prepareCustomRadialMenu(CreatureObject* creatureObject, uint8 itemCount);
-		void			handleObjectMenuSelect(uint8 messageType,Object* srcObject);
+    bool			getActive() {
+        return mActive;
+    }
+    void			setActive(bool value) {
+        mActive = value;
+    }
 
-		void			setSchematicCustomName(string name){mSchematicName = name;}
-		string			getSchematicCustomName(){return mSchematicName;}
+    virtual void	ResetRadialMenu() {
+        mRadialMenu.reset();
+        RadialMenu* radial	= NULL;
+        RadialMenuPtr radialPtr(radial);
+        mRadialMenu = radialPtr;
+    }
+    void			prepareCustomRadialMenu(CreatureObject* creatureObject, uint8 itemCount);
+    void			handleObjectMenuSelect(uint8 messageType,Object* srcObject);
 
-		void			setSchematicName(string name){mSchematicSTF = name;}
-		string			getSchematicName(){return mSchematicSTF;}
+    void			setSchematicCustomName(BString name) {
+        mSchematicName = name;
+    }
+    BString			getSchematicCustomName() {
+        return mSchematicName;
+    }
 
-		void			setSchematicFile(string name){mSchematicFile = name;}
-		string			getSchematicFile(){return mSchematicFile;}
+    void			setSchematicName(BString name) {
+        mSchematicSTF = name;
+    }
+    BString			getSchematicName() {
+        return mSchematicSTF;
+    }
 
-		uint64			getManSchemID(){ return mManSchematicID; }
-		void			setManSchemID(uint64 value){ mManSchematicID = value; }
+    void			setSchematicFile(BString name) {
+        mSchematicFile = name;
+    }
+    BString			getSchematicFile() {
+        return mSchematicFile;
+    }
 
-		uint64			getIngredientHopper(){ return mIngredientHopper; }
-		void			setIngredientHopper(uint64 value){ mIngredientHopper= value; }
+    uint64			getManSchemID() {
+        return mManSchematicID;
+    }
+    void			setManSchemID(uint64 value) {
+        mManSchematicID = value;
+    }
 
-		uint64			getOutputHopper(){ return mOutputHopper; }
-		void			setOutputHopper(uint64 value){ mOutputHopper= value; }
+    uint64			getIngredientHopper() {
+        return mIngredientHopper;
+    }
+    void			setIngredientHopper(uint64 value) {
+        mIngredientHopper= value;
+    }
 
-		uint32			getMask(){ return mSchematicMask; }
-		void			setMask(uint32 value){ mSchematicMask = value; }
+    uint64			getOutputHopper() {
+        return mOutputHopper;
+    }
+    void			setOutputHopper(uint64 value) {
+        mOutputHopper= value;
+    }
+
+    uint32			getMask() {
+        return mSchematicMask;
+    }
+    void			setMask(uint32 value) {
+        mSchematicMask = value;
+    }
 
 
-	private:
+private:
 
-		bool			mActive;
+    bool			mActive;
 
-		
-		FactoryFamily	mFactoryFamily;
 
-		uint32			mSchematicMask;
+    FactoryFamily	mFactoryFamily;
 
-		uint32			mTotalLoadCount;
-		uint64			mManSchematicID;
+    uint32			mSchematicMask;
 
-		uint64			mIngredientHopper;
-		uint64			mOutputHopper;
+    uint32			mTotalLoadCount;
+    uint64			mManSchematicID;
 
-		string			mSchematicName;
-		string			mSchematicFile;
-		string			mSchematicSTF;
-		
+    uint64			mIngredientHopper;
+    uint64			mOutputHopper;
+
+    BString			mSchematicName;
+    BString			mSchematicFile;
+    BString			mSchematicSTF;
+
 };
 
 //=============================================================================

@@ -1,11 +1,27 @@
 /*
 ---------------------------------------------------------------------------------------
-This source file is part of swgANH (Star Wars Galaxies - A New Hope - Server Emulator)
-For more information, see http://www.swganh.org
+This source file is part of SWG:ANH (Star Wars Galaxies - A New Hope - Server Emulator)
 
+For more information, visit http://www.swganh.com
 
-Copyright (c) 2006 - 2010 The swgANH Team
+Copyright (c) 2006 - 2010 The SWG:ANH Team
+---------------------------------------------------------------------------------------
+Use of this source code is governed by the GPL v3 license that can be found
+in the COPYING file or at http://www.gnu.org/licenses/gpl-3.0.html
 
+This library is free software; you can redistribute it and/or
+modify it under the terms of the GNU Lesser General Public
+License as published by the Free Software Foundation; either
+version 2.1 of the License, or (at your option) any later version.
+
+This library is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+Lesser General Public License for more details.
+
+You should have received a copy of the GNU Lesser General Public
+License along with this library; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 ---------------------------------------------------------------------------------------
 */
 
@@ -19,47 +35,59 @@ Copyright (c) 2006 - 2010 The swgANH Team
 
 class HouseObject :	public BuildingObject, public DatabaseCallback
 {
-	friend class HouseFactory;
-	friend class BuildingFactory;
+    friend class HouseFactory;
+    friend class BuildingFactory;
 
-	public:
+public:
 
-		HouseObject();
-		~HouseObject();
+    HouseObject();
+    ~HouseObject();
 
-		virtual void	handleDatabaseJobComplete(void* ref,DatabaseResult* result);
-		
-		virtual void	handleObjectReady(Object* object,DispatchClient* client, uint64 hopper);
+    virtual void	handleDatabaseJobComplete(void* ref,DatabaseResult* result);
 
-		HouseFamily	getHouseFamily(){ return mHouseFamily; }
-		void			setHouseFamily(HouseFamily ff){ mHouseFamily = ff; }
+    virtual void	handleObjectReady(Object* object,DispatchClient* client, uint64 hopper);
 
-		uint32			getLoadCount(){ return mTotalLoadCount; }
-		uint32			decLoadCount(){ return (mTotalLoadCount-1); }
-		void			setLoadCount(uint32 count){ mTotalLoadCount = count; }
+    HouseFamily	getHouseFamily() {
+        return mHouseFamily;
+    }
+    void			setHouseFamily(HouseFamily ff) {
+        mHouseFamily = ff;
+    }
 
-		void			prepareCustomRadialMenu(CreatureObject* creatureObject, uint8 itemCount);
-		void			handleObjectMenuSelect(uint8 messageType,Object* srcObject);
+    uint32			getLoadCount() {
+        return mTotalLoadCount;
+    }
+    uint32			decLoadCount() {
+        return (mTotalLoadCount-1);
+    }
+    void			setLoadCount(uint32 count) {
+        mTotalLoadCount = count;
+    }
 
-		PlayerStructure*	getSign(){ return mSign; }
-		void				setSign(PlayerStructure* sign){ mSign = sign; }
+    void			prepareCustomRadialMenu(CreatureObject* creatureObject, uint8 itemCount);
+    void			handleObjectMenuSelect(uint8 messageType,Object* srcObject);
 
-		bool			hasAdmin(uint64 id);
-	
-		void			prepareDestruction();
+    PlayerStructure*	getSign() {
+        return mSign;
+    }
+    void				setSign(PlayerStructure* sign) {
+        mSign = sign;
+    }
 
-		void			checkCellPermission(PlayerObject* player);
+    bool			hasAdmin(uint64 id);
+
+    void			checkCellPermission(PlayerObject* player);
 
 
-	private:
-		
-		BuildingFamily	mBuildingFamily;
-		HouseFamily		mHouseFamily;
+private:
 
-		uint32			mTotalLoadCount;
+    BuildingFamily	mBuildingFamily;
+    HouseFamily		mHouseFamily;
 
-		PlayerStructure* mSign;
-		
+    uint32			mTotalLoadCount;
+
+    PlayerStructure* mSign;
+
 };
 
 //=============================================================================

@@ -1,11 +1,27 @@
 /*
 ---------------------------------------------------------------------------------------
-This source file is part of swgANH (Star Wars Galaxies - A New Hope - Server Emulator)
-For more information, see http://www.swganh.org
+This source file is part of SWG:ANH (Star Wars Galaxies - A New Hope - Server Emulator)
 
+For more information, visit http://www.swganh.com
 
-Copyright (c) 2006 - 2010 The swgANH Team
+Copyright (c) 2006 - 2010 The SWG:ANH Team
+---------------------------------------------------------------------------------------
+Use of this source code is governed by the GPL v3 license that can be found
+in the COPYING file or at http://www.gnu.org/licenses/gpl-3.0.html
 
+This library is free software; you can redistribute it and/or
+modify it under the terms of the GNU Lesser General Public
+License as published by the Free Software Foundation; either
+version 2.1 of the License, or (at your option) any later version.
+
+This library is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+Lesser General Public License for more details.
+
+You should have received a copy of the GNU Lesser General Public
+License along with this library; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 ---------------------------------------------------------------------------------------
 */
 #include "BankTerminal.h"
@@ -29,12 +45,11 @@ Copyright (c) 2006 - 2010 The swgANH Team
 #include "WorldManager.h"
 
 #include "MessageLib/MessageLib.h"
-#include "LogManager/LogManager.h"
 #include "DatabaseManager/Database.h"
 #include "DatabaseManager/DatabaseResult.h"
 #include "DatabaseManager/DataBinding.h"
-#include "Common/Message.h"
-#include "Common/MessageFactory.h"
+#include "NetworkManager/Message.h"
+#include "NetworkManager/MessageFactory.h"
 
 //======================================================================================================================
 //
@@ -43,65 +58,63 @@ Copyright (c) 2006 - 2010 The swgANH Team
 
 void ObjectController::_handleRequestWaypointAtPosition(uint64 targetId,Message* message,ObjectControllerCmdProperties* cmdProperties)
 {
-	PlayerObject*	player	= dynamic_cast<PlayerObject*>(mObject);
-	Datapad*		datapad = dynamic_cast<Datapad*>(player->getEquipManager()->getEquippedObject(CreatureEquipSlot_Datapad));
+    PlayerObject*	player	= dynamic_cast<PlayerObject*>(mObject);
+    Datapad* datapad			= player->getDataPad();
 
-	if(!datapad->getCapacity())
-	{
-		gMessageLib->sendSystemMessage(player,L"","base_player","too_many_waypoints");
-		return;
-	}
+    //if(!datapad->getCapacity())
+    //{
+    //	gMessageLib->sendSystemMessage(player,L"","base_player","too_many_waypoints");
+    //	return;
+    //}
 
-	BStringVector	dataElements;
-	string			dataStr;
-	string			nameStr;
+    BStringVector	dataElements;
+    BString			dataStr;
+    std::string			nameStr;
 
-	message->getStringUnicode16(dataStr);
+    message->getStringUnicode16(dataStr);
 
-	// Have to convert BEFORE using split, since the conversion done there is removed It will assert().. evil grin...
-	// Either do the conversion HERE, or better fix the split so it handles unicoe also.
-	dataStr.convert(BSTRType_ANSI);
-	uint32 elementCount = dataStr.split(dataElements,' ');
+    // Have to convert BEFORE using split, since the conversion done there is removed It will assert().. evil grin...
+    // Either do the conversion HERE, or better fix the split so it handles unicoe also.
+    dataStr.convert(BSTRType_ANSI);
+    uint32 elementCount = dataStr.split(dataElements,' ');
 
-	if(elementCount < 5)
-	{
-		if(elementCount < 4)
-		{
-			gLogger->logMsgF("ObjController::handleCreateWaypointAtPosition: Error in parameters(count %u)",MSG_NORMAL,elementCount);
-			return;
-		}
-		else
-		{
-			nameStr = gWorldManager->getPlanetNameThis();
-			nameStr.getAnsi()[0] = toupper(nameStr.getAnsi()[0]);
-		}
-	}
-	else
-	{
-		for(uint i = 4;i < elementCount;i++)
-		{
-			nameStr	<< dataElements[i].getAnsi();
+    if(elementCount < 5)
+    {
+        if(elementCount < 4)
+        {
+            return;
+        }
+        else
+        {
+            nameStr = gWorldManager->getPlanetNameThis();
+            std::transform(nameStr.begin(), nameStr.end(), nameStr.begin(), &tolower);
+        }
+    }
+    else
+    {
+        for(uint i = 4; i < elementCount; i++)
+        {
+            nameStr.append(dataElements[i].getAnsi());
 
-			if(i + 1 < elementCount)
-				nameStr << " ";
-		}
-	}
+            if(i + 1 < elementCount)
+                nameStr.append(" ");
+        }
+    }
 
-	string	planetStr	= dataElements[0].getAnsi();
-	gLogger->logMsgF("ObjController::handleCreateWaypointAtPosition: planet %s",MSG_NORMAL,planetStr.getAnsi());
-	float	x			= static_cast<float>(atof(dataElements[1].getAnsi()));
-	float	y			= static_cast<float>(atof(dataElements[2].getAnsi()));
-	float	z			= static_cast<float>(atof(dataElements[3].getAnsi()));
+    BString	planetStr	= dataElements[0].getAnsi();
+    //gLogger->log(LogManager::DEBUG,"ObjController::handleCreateWaypointAtPosition: planet %s",planetStr.getAnsi());
+    float	x			= static_cast<float>(atof(dataElements[1].getAnsi()));
+    float	y			= static_cast<float>(atof(dataElements[2].getAnsi()));
+    float	z			= static_cast<float>(atof(dataElements[3].getAnsi()));
 
-	int32 planetId = gWorldManager->getPlanetIdByName(planetStr);
+    int32 planetId = gWorldManager->getPlanetIdByName(planetStr);
 
-	if(planetId == -1)
-	{
-		gLogger->logMsgF("ObjController::handleCreateWaypointAtPosition: could not find planet id for %s",MSG_NORMAL,planetStr.getAnsi());
-		return;
-	}
+    if(planetId == -1)
+    {
+        return;
+    }
 
-    datapad->requestNewWaypoint(nameStr, glm::vec3(x,y,z),static_cast<uint16>(planetId),Waypoint_blue);
+    datapad->requestNewWaypoint(nameStr.c_str(), glm::vec3(x,y,z),static_cast<uint16>(planetId),Waypoint_blue);
 }
 
 //======================================================================================================================
@@ -111,21 +124,21 @@ void ObjectController::_handleRequestWaypointAtPosition(uint64 targetId,Message*
 
 void ObjectController::_handleSetWaypointActiveStatus(uint64 targetId,Message* message,ObjectControllerCmdProperties* cmdProperties)
 {
-	PlayerObject*	player		= dynamic_cast<PlayerObject*>(mObject);
-	WaypointObject*	waypoint	= NULL;
-	Datapad*		datapad		= dynamic_cast<Datapad*>(player->getEquipManager()->getEquippedObject(CreatureEquipSlot_Datapad));
+    PlayerObject*	player		= dynamic_cast<PlayerObject*>(mObject);
+    WaypointObject*	waypoint	= NULL;
+    Datapad* datapad			= player->getDataPad();
 
-	waypoint = datapad->getWaypointById(targetId);
+    waypoint = datapad->getWaypointById(targetId);
 
-	if(waypoint)
-	{
-		waypoint->toggleActive();
-		mDatabase->ExecuteSqlAsync(0,0,"UPDATE waypoints set active=%u WHERE waypoint_id=%"PRIu64"",(uint8)waypoint->getActive(),targetId);
-	}
-	else
-	{
-		gLogger->logMsgF("ObjController::handleSetWaypointStatus: could not find waypoint %"PRIu64"",MSG_LOW,targetId);
-	}
+    if(waypoint)
+    {
+        waypoint->toggleActive();
+        mDatabase->executeSqlAsync(0,0,"UPDATE %s.waypoints set active=%u WHERE waypoint_id=%" PRIu64 "",mDatabase->galaxy(),(uint8)waypoint->getActive(),targetId);
+    }
+    else
+    {
+        DLOG(INFO) << "ObjController::handleSetWaypointStatus: could not find waypoint " << targetId;
+    }
 }
 
 //======================================================================================================================
@@ -135,16 +148,16 @@ void ObjectController::_handleSetWaypointActiveStatus(uint64 targetId,Message* m
 
 void ObjectController::_handleWaypoint(uint64 targetId, Message* message, ObjectControllerCmdProperties* cmdProperties)
 {
-	PlayerObject*	player			= dynamic_cast<PlayerObject*>(mObject);
-	Datapad*		datapad			= dynamic_cast<Datapad*>(player->getEquipManager()->getEquippedObject(CreatureEquipSlot_Datapad));
-	string			waypoint_data;
+    PlayerObject*	player			= dynamic_cast<PlayerObject*>(mObject);
+    Datapad* datapad			= player->getDataPad();
+    BString			waypoint_data;
     glm::vec3       waypoint_position;
-					
+
     // Before anything else verify the datapad can hold another waypoint.
-	if(! datapad->getCapacity()) {
-		gMessageLib->sendSystemMessage(player, L"", "base_player", "too_many_waypoints");
-		return;
-	}
+    if(! datapad->getCapacity()) {
+        gMessageLib->SendSystemMessage(::common::OutOfBand("base_player", "too_many_waypoints"), player);
+        return;
+    }
 
     // Read in any waypoint data that may have been sent:
     //  [SYNTAX] /waypoint <x> <z> or /waypoint <x> <y> <z>
@@ -158,7 +171,7 @@ void ObjectController::_handleWaypoint(uint64 targetId, Message* message, Object
         // If there are an invalid number of items then disregard and notify the player of the correct
         // format for the /waypoint command.
         if (count < 2 || count > 3) {
-            gMessageLib->sendSystemMessage(player,L"[SYNTAX] /waypoint <x> <z> or /waypoint <x> <y> <z>");
+            gMessageLib->SendSystemMessage(L"[SYNTAX] /waypoint <x> <z> or /waypoint <x> <y> <z>", player);
             return;
         }
 
@@ -171,16 +184,16 @@ void ObjectController::_handleWaypoint(uint64 targetId, Message* message, Object
 
         // Validate the position values.
         if (waypoint_position.x < -8192 || waypoint_position.x > 8192 ||
-            waypoint_position.y < -500 || waypoint_position.y > 500 ||
-            waypoint_position.z < -8192 || waypoint_position.z > 8192) {
-		    gMessageLib->sendSystemMessage(player, L"[SYNTAX] Invalid range for /waypoint. x = -8192/8192 y = -500/500 z = -8192/8192");
+                waypoint_position.y < -500 || waypoint_position.y > 500 ||
+                waypoint_position.z < -8192 || waypoint_position.z > 8192) {
+            gMessageLib->SendSystemMessage( L"[SYNTAX] Invalid range for /waypoint. x = -8192/8192 y = -500/500 z = -8192/8192", player);
             return;
         }
     } else {
         // If no parameters were passed to the /waypoint command use the current world position.
         waypoint_position = player->getWorldPosition();
     }
-					
+
     datapad->requestNewWaypoint("Waypoint", waypoint_position, static_cast<uint16>(gWorldManager->getZoneId()), Waypoint_blue);
 }
 
@@ -191,36 +204,37 @@ void ObjectController::_handleWaypoint(uint64 targetId, Message* message, Object
 
 void ObjectController::_handleSetWaypointName(uint64 targetId,Message* message,ObjectControllerCmdProperties* cmdProperties)
 {
-	PlayerObject*	player		= dynamic_cast<PlayerObject*>(mObject);
-	string			name;
-	Datapad*		datapad		= dynamic_cast<Datapad*>(player->getEquipManager()->getEquippedObject(CreatureEquipSlot_Datapad));
-	WaypointObject*	waypoint	= datapad->getWaypointById(targetId);
-	int8			sql[1024],restStr[64],*sqlPointer;
+    PlayerObject*	player		= dynamic_cast<PlayerObject*>(mObject);
+    BString			name;
+    Datapad* datapad			= player->getDataPad();
+    WaypointObject*	waypoint	= datapad->getWaypointById(targetId);
+    int8			sql[1024],restStr[64],*sqlPointer;
 
-	if(waypoint == NULL)
-	{
-		gLogger->logMsgF("ObjController::handlesetwaypointname: could not find waypoint %"PRIu64"",MSG_NORMAL,targetId);
-		return;
-	}
+    if(waypoint == NULL)
+    {
+        DLOG(INFO) << "ObjController::handlesetwaypointname: could not find waypoint "<< targetId;
+        return;
+    }
 
-	message->getStringUnicode16(name);
+    message->getStringUnicode16(name);
 
-	if(!(name.getLength()))
-		return;
+    if(!(name.getLength()))
+        return;
 
-	waypoint->setName(name);
+    waypoint->setName(name);
 
-	name.convert(BSTRType_ANSI);
+    name.convert(BSTRType_ANSI);
 
-	sprintf(sql,"UPDATE waypoints SET name='");
-	sqlPointer = sql + strlen(sql);
-	sqlPointer += mDatabase->Escape_String(sqlPointer,name.getAnsi(),name.getLength());
-	sprintf(restStr,"' WHERE waypoint_id=%"PRIu64"",targetId);
-	strcat(sql,restStr);
+    sprintf(sql,"UPDATE %s.waypoints SET name='",mDatabase->galaxy());
+    sqlPointer = sql + strlen(sql);
+    sqlPointer += mDatabase->escapeString(sqlPointer,name.getAnsi(),name.getLength());
+    sprintf(restStr,"' WHERE waypoint_id=%" PRIu64 "",targetId);
+    strcat(sql,restStr);
 
-	mDatabase->ExecuteSqlAsync(NULL,NULL,sql);
+    mDatabase->executeSqlAsync(NULL,NULL,sql);
+    
 
-	gMessageLib->sendUpdateWaypoint(waypoint,ObjectUpdateChange,player);
+    gMessageLib->sendUpdateWaypoint(waypoint,ObjectUpdateChange,player);
 }
 
 //======================================================================================================================
